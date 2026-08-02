@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/layout/AppShell";
 import { SurahReader } from "@/components/quran/SurahReader";
 
-type SurahSearch = { ayah?: number };
+type SurahSearch = { ayah?: number | undefined };
 
 export const Route = createFileRoute("/quran/$surahId")({
   validateSearch: (search: Record<string, unknown>): SurahSearch => ({
