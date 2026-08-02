@@ -16,7 +16,13 @@ import { useApp } from "@/lib/app-context";
 import { haptic } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 
-export function SurahReader({ surahId, initialAyah }: { surahId: number; initialAyah?: number }) {
+export function SurahReader({
+  surahId,
+  initialAyah,
+}: {
+  surahId: number;
+  initialAyah?: number | undefined;
+}) {
   const { settings, online } = useApp();
   const [selected, setSelected] = useState<number | null>(null);
   const [playing, setPlaying] = useState<number | null>(null);
