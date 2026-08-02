@@ -66,7 +66,7 @@ export function getNextPrayer(coords: Coords, method: MethodKey, now = new Date(
   const upcoming = today.find((p) => p.date.getTime() > now.getTime());
   if (upcoming) return upcoming;
   const tomorrow = new Date(now.getTime() + 86400000);
-  return getDayTimings(coords, method, tomorrow)[0];
+  return getDayTimings(coords, method, tomorrow)[0]!;
 }
 
 export function getLastThird(coords: Coords, method: MethodKey, date = new Date()) {
