@@ -1,24 +1,41 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { AppShell } from "@/components/layout/AppShell";
+import { NextPrayerCard } from "@/components/prayer/NextPrayerCard";
+import { FeatureGrid } from "@/components/home/FeatureGrid";
+import { SpiritualStats } from "@/components/home/SpiritualStats";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "نور — قرآن وأذكار ومواقيت صلاة" },
+      {
+        name: "description",
+        content: "تطبيق إسلامي شامل يعمل بدون إنترنت: القرآن والتفسير، الأذكار والمسبحة، مواقيت الصلاة، القبلة والتقويم الهجري.",
+      },
+      { property: "og:title", content: "نور — قرآن وأذكار ومواقيت صلاة" },
+      { property: "og:description", content: "رفيقك اليومي في العبادة، يعمل أوفلاين بالكامل." },
+    ],
+  }),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
 function Index() {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
+    <AppShell title="نور" subtitle="رفيقك اليومي في العبادة">
+      <div className="space-y-5">
+        <NextPrayerCard />
+        <SpiritualStats />
+        <div>
+          <h2 className="mb-3 px-1 text-sm font-bold text-muted-foreground">الأقسام</h2>
+          <FeatureGrid />
+        </div>
+        <div className="surface-card p-4 text-center">
+          <p className="font-display text-lg leading-9">
+            «أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ»
+          </p>
+          <p className="mt-1 text-[11px] text-muted-foreground">سورة الرعد — الآية ٢٨</p>
+        </div>
+      </div>
+    </AppShell>
   );
 }
