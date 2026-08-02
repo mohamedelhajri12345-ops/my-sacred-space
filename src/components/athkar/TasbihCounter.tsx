@@ -57,7 +57,7 @@ export function TasbihCounter() {
 
         <button
           onClick={increment}
-          className="press relative flex size-56 items-center justify-center rounded-full gradient-night text-[oklch(0.95_0.02_84)] shadow-[var(--shadow-glow)]"
+          className="press relative flex size-56 items-center justify-center rounded-full gradient-night text-cream shadow-[var(--shadow-glow)]"
         >
           <svg className="absolute inset-0 -rotate-90" viewBox="0 0 100 100">
             <circle cx="50" cy="50" r="46" fill="none" stroke="oklch(1 0 0 / 0.12)" strokeWidth="4" />

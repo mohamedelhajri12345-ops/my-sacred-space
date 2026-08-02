@@ -11,8 +11,8 @@ export function NextPrayerCard() {
 
   return (
     <Link to="/prayer" className="press animate-rise block">
-      <div className="gradient-night relative overflow-hidden rounded-3xl p-5 text-[oklch(0.95_0.02_84)] shadow-[var(--shadow-soft)]">
-        <div className="absolute -left-8 -top-10 size-36 rounded-full bg-[oklch(0.78_0.12_82)]/20 blur-2xl" />
+      <div className="gradient-night relative overflow-hidden rounded-3xl p-5 text-cream shadow-[var(--shadow-soft)]">
+        <div className="absolute -left-8 -top-10 size-36 rounded-full bg-gold/20 blur-2xl" />
         <div className="relative">
           <div className="flex items-center justify-between text-xs opacity-80">
             <span className="flex items-center gap-1">

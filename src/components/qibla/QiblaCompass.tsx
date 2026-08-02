@@ -75,9 +75,9 @@ export function QiblaCompass() {
       </div>
 
       <div className="surface-card flex flex-col items-center gap-5 p-6">
-        <div className="relative flex size-72 items-center justify-center rounded-full gradient-night text-[oklch(0.95_0.02_84)]">
+        <div className="relative flex size-72 items-center justify-center rounded-full gradient-night text-cream">
           <div
-            className="absolute inset-3 rounded-full border border-[oklch(0.78_0.12_82)]/25 transition-transform duration-200"
+            className="absolute inset-3 rounded-full border border-gold/25 transition-transform duration-200"
             style={{ transform: `rotate(${heading === null ? 0 : -heading}deg)` }}
           >
             {["ش", "ق", "ج", "غ"].map((dir, i) => (
@@ -102,8 +102,8 @@ export function QiblaCompass() {
               <Navigation
                 className={
                   aligned
-                    ? "size-12 text-[oklch(0.85_0.14_85)] drop-shadow-[0_0_12px_oklch(0.8_0.14_85)]"
-                    : "size-12 text-[oklch(0.78_0.12_82)]"
+                    ? "size-12 text-gold drop-shadow-[0_0_12px_var(--gold)]"
+                    : "size-12 text-gold-soft"
                 }
               />
               <span className="mt-1 text-[10px] opacity-80">القبلة</span>
