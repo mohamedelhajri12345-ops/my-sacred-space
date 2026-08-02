@@ -36,8 +36,6 @@ const ALERTS: { key: AlertKind; label: string }[] = [
   { key: "adhan", label: "نغمة أذان" },
 ];
 
-export default function noop() {}
-
 function SettingsPage() {
   const { settings, updateSettings, coords, requestLocation, locating, streak } = useApp();
 
