@@ -10,6 +10,9 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CalendarRouteImport } from './routes/calendar'
+import { Route as PrayerRouteImport } from './routes/prayer'
+import { Route as QiblaRouteImport } from './routes/qibla'
 import { Route as AthkarIndexRouteImport } from './routes/athkar.index'
 import { Route as AthkarCategoryIdRouteImport } from './routes/athkar.$categoryId'
 import { Route as AthkarTasbihRouteImport } from './routes/athkar.tasbih'
@@ -19,6 +22,21 @@ import { Route as QuranSurahIdRouteImport } from './routes/quran.$surahId'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CalendarRoute = CalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrayerRoute = PrayerRouteImport.update({
+  id: '/prayer',
+  path: '/prayer',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QiblaRoute = QiblaRouteImport.update({
+  id: '/qibla',
+  path: '/qibla',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AthkarIndexRoute = AthkarIndexRouteImport.update({
@@ -49,6 +67,9 @@ const QuranSurahIdRoute = QuranSurahIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/calendar': typeof CalendarRoute
+  '/prayer': typeof PrayerRoute
+  '/qibla': typeof QiblaRoute
   '/athkar/$categoryId': typeof AthkarCategoryIdRoute
   '/athkar/tasbih': typeof AthkarTasbihRoute
   '/quran/$surahId': typeof QuranSurahIdRoute
@@ -57,6 +78,9 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/calendar': typeof CalendarRoute
+  '/prayer': typeof PrayerRoute
+  '/qibla': typeof QiblaRoute
   '/athkar/$categoryId': typeof AthkarCategoryIdRoute
   '/athkar/tasbih': typeof AthkarTasbihRoute
   '/quran/$surahId': typeof QuranSurahIdRoute
@@ -66,6 +90,9 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/calendar': typeof CalendarRoute
+  '/prayer': typeof PrayerRoute
+  '/qibla': typeof QiblaRoute
   '/athkar/$categoryId': typeof AthkarCategoryIdRoute
   '/athkar/tasbih': typeof AthkarTasbihRoute
   '/quran/$surahId': typeof QuranSurahIdRoute
@@ -76,6 +103,9 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/calendar'
+    | '/prayer'
+    | '/qibla'
     | '/athkar/$categoryId'
     | '/athkar/tasbih'
     | '/quran/$surahId'
@@ -84,6 +114,9 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/calendar'
+    | '/prayer'
+    | '/qibla'
     | '/athkar/$categoryId'
     | '/athkar/tasbih'
     | '/quran/$surahId'
@@ -92,6 +125,9 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/calendar'
+    | '/prayer'
+    | '/qibla'
     | '/athkar/$categoryId'
     | '/athkar/tasbih'
     | '/quran/$surahId'
@@ -101,6 +137,9 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CalendarRoute: typeof CalendarRoute
+  PrayerRoute: typeof PrayerRoute
+  QiblaRoute: typeof QiblaRoute
   AthkarCategoryIdRoute: typeof AthkarCategoryIdRoute
   AthkarTasbihRoute: typeof AthkarTasbihRoute
   QuranSurahIdRoute: typeof QuranSurahIdRoute
@@ -115,6 +154,27 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/calendar': {
+      id: '/calendar'
+      path: '/calendar'
+      fullPath: '/calendar'
+      preLoaderRoute: typeof CalendarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/prayer': {
+      id: '/prayer'
+      path: '/prayer'
+      fullPath: '/prayer'
+      preLoaderRoute: typeof PrayerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/qibla': {
+      id: '/qibla'
+      path: '/qibla'
+      fullPath: '/qibla'
+      preLoaderRoute: typeof QiblaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/athkar/': {
@@ -157,6 +217,9 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CalendarRoute: CalendarRoute,
+  PrayerRoute: PrayerRoute,
+  QiblaRoute: QiblaRoute,
   AthkarCategoryIdRoute: AthkarCategoryIdRoute,
   AthkarTasbihRoute: AthkarTasbihRoute,
   QuranSurahIdRoute: QuranSurahIdRoute,
