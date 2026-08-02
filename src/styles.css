@@ -4,6 +4,12 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@theme {
+  --font-arabic: "Tajawal", system-ui, sans-serif;
+  --font-display: "Amiri", Georgia, serif;
+  --font-quran: "Amiri Quran", "Amiri", serif;
+}
+
 /*
  * Design system definition.
  *
