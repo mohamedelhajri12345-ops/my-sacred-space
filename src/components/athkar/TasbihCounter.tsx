@@ -46,7 +46,9 @@ export function TasbihCounter() {
             }}
             className={cn(
               "press rounded-full border border-border px-3 py-1.5 text-xs font-medium",
-              i === presetIndex ? "gradient-warm border-transparent text-primary-foreground" : "bg-card text-muted-foreground",
+              i === presetIndex
+                ? "gradient-gold border-transparent text-gold-foreground shadow-[var(--shadow-soft)]"
+                : "bg-card text-muted-foreground",
             )}
           >
             {p.label}
