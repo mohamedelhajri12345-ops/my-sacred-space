@@ -17,9 +17,11 @@ export function TasbihCounter() {
 
   const preset = TASBIH_PRESETS[presetIndex]!;
   const percent = Math.min(100, (count / preset.target) * 100);
+  const [pop, setPop] = useState(0);
 
   const increment = () => {
     const next = count + 1;
+    setPop((p) => p + 1);
     if (vibrate) haptic(next % preset.target === 0 ? "success" : "light");
     if (next >= preset.target) {
       setCount(0);
@@ -75,7 +77,9 @@ export function TasbihCounter() {
             />
           </svg>
           <div className="text-center">
-            <span className="block text-6xl font-bold tabular-nums">{toArabicNumber(count)}</span>
+            <span key={pop} className="animate-bead block text-6xl font-bold tabular-nums">
+              {toArabicNumber(count)}
+            </span>
             <span className="mt-1 block text-xs opacity-75">من {toArabicNumber(preset.target)}</span>
           </div>
         </button>

@@ -20,8 +20,20 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
+  const hour = new Date().getHours();
+  const greeting =
+    hour < 5
+      ? "قيام مبارك"
+      : hour < 12
+        ? "صباح الخير"
+        : hour < 17
+          ? "طاب نهارك"
+          : hour < 20
+            ? "مساء الخير"
+            : "طابت ليلتك";
+
   return (
-    <AppShell title="نور" subtitle="رفيقك اليومي في العبادة">
+    <AppShell title={greeting} subtitle="رفيقك اليومي في العبادة">
       <div className="space-y-5">
         <NextPrayerCard />
         <SpiritualStats />
@@ -29,6 +41,7 @@ function Index() {
           <h2 className="mb-3 px-1 text-sm font-bold text-muted-foreground">الأقسام</h2>
           <FeatureGrid />
         </div>
+        <div className="divider-geo" aria-hidden />
         <div className="surface-card p-4 text-center">
           <p className="font-display text-lg leading-9">
             «أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ»
