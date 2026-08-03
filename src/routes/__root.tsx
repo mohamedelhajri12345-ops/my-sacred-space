@@ -15,6 +15,7 @@ import { AppProvider } from "../lib/app-context";
 import { ChatFab } from "../components/chat/ChatFab";
 import { Toaster } from "../components/ui/sonner";
 import { registerServiceWorker } from "../lib/register-sw";
+import { Splash } from "../components/layout/Splash";
 
 function NotFoundComponent() {
   return (
@@ -102,7 +103,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Amiri:ital,wght@0,400;0,700;1,400&family=Tajawal:wght@300;400;500;700;800&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Amiri:ital,wght@0,400;0,700;1,400&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Tajawal:wght@300;400;500;700;800&display=swap",
       },
       { rel: "manifest", href: "/manifest.webmanifest" },
       { rel: "apple-touch-icon", href: "/icons/icon-192.png" },
@@ -138,6 +139,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AppProvider>
+        <Splash />
         {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
         <Outlet />
         <ChatFab />

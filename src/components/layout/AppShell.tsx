@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { Moon, Sun, Settings2, WifiOff } from "lucide-react";
 import { useApp } from "@/lib/app-context";
 import { formatHijri } from "@/lib/hijri";
@@ -16,9 +16,11 @@ export function AppShell({
   subtitle?: string;
 }) {
   const { settings, updateSettings, online } = useApp();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   return (
-    <div className="min-h-screen pb-28">
+    <div className="relative min-h-screen pb-28">
+      <div aria-hidden className="pattern-geo pointer-events-none fixed inset-0 -z-10 opacity-[0.35]" />
       <header className="sticky top-0 z-30 border-b border-border/60 bg-background/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-xl items-center justify-between gap-3 px-4 py-3">
           <div className="min-w-0">
@@ -52,7 +54,9 @@ export function AppShell({
           </div>
         </div>
       </header>
-      <main className="mx-auto w-full max-w-xl px-4 py-4">{children}</main>
+      <main key={pathname} className="animate-page mx-auto w-full max-w-xl px-4 py-4">
+        {children}
+      </main>
       <BottomNav />
     </div>
   );

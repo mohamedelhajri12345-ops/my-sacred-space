@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { MessageCircleHeart, Send, X, WifiOff, Info } from "lucide-react";
+import { Moon, Send, X, WifiOff, Info } from "lucide-react";
 import { useApp } from "@/lib/app-context";
 import { haptic } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
@@ -62,9 +62,10 @@ export function ChatFab() {
           haptic("medium");
           setOpen(true);
         }}
-        className="press fixed bottom-24 left-4 z-50 flex size-14 items-center justify-center rounded-full gradient-gold text-gold-foreground shadow-[var(--shadow-glow)]"
+        className="press animate-soft-pulse fixed bottom-24 left-4 z-50 flex size-14 items-center justify-center rounded-full gradient-gold text-gold-foreground shadow-[var(--shadow-glow)]"
       >
-        <MessageCircleHeart className="size-6" />
+        <Moon className="size-6 -rotate-12" />
+        <span aria-hidden className="absolute -top-0.5 -left-0.5 size-2 rounded-full bg-primary" />
       </button>
 
       {open && (
