@@ -19,9 +19,12 @@ export default defineConfig({
         registerType: "autoUpdate",
         injectRegister: null,
         filename: "sw.js",
+        // ملفات العميل تُبنى داخل dist/client، ويجب أن يُنشر sw.js هناك ليكون متاحًا على /sw.js
+        outDir: "dist/client",
         devOptions: { enabled: false },
         manifest: false,
         workbox: {
+          globDirectory: "dist/client",
           globPatterns: ["**/*.{js,css,html,png,svg,ico,woff2,json}"],
           maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
           navigateFallbackDenylist: [/^\/~oauth/, /^\/api\//],
@@ -32,11 +35,23 @@ export default defineConfig({
               options: { cacheName: "html-nav", networkTimeoutSeconds: 4 },
             },
             {
+              // بيانات القرآن والتفسير: عرض فوري من الكاش مع تحديث في الخلفية
               urlPattern: ({ url }) => url.pathname.startsWith("/data/"),
-              handler: "CacheFirst",
+              handler: "StaleWhileRevalidate",
               options: {
                 cacheName: "quran-data",
                 expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 },
+                cacheableResponse: { statuses: [0, 200] },
+              },
+            },
+            {
+              // أصول البناء المُبصمة (hashed) — cache-first
+              urlPattern: ({ url, sameOrigin }) =>
+                sameOrigin && /\/(assets|_build)\//.test(url.pathname),
+              handler: "CacheFirst",
+              options: {
+                cacheName: "app-shell-assets",
+                expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 90 },
               },
             },
             {
