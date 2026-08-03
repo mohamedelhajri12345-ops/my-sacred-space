@@ -19,9 +19,12 @@ export default defineConfig({
         registerType: "autoUpdate",
         injectRegister: null,
         filename: "sw.js",
+        // ملفات العميل تُبنى داخل dist/client، ويجب أن يُنشر sw.js هناك ليكون متاحًا على /sw.js
+        outDir: "dist/client",
         devOptions: { enabled: false },
         manifest: false,
         workbox: {
+          globDirectory: "dist/client",
           globPatterns: ["**/*.{js,css,html,png,svg,ico,woff2,json}"],
           maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
           navigateFallbackDenylist: [/^\/~oauth/, /^\/api\//],
