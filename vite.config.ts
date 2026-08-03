@@ -32,11 +32,23 @@ export default defineConfig({
               options: { cacheName: "html-nav", networkTimeoutSeconds: 4 },
             },
             {
+              // بيانات القرآن والتفسير: عرض فوري من الكاش مع تحديث في الخلفية
               urlPattern: ({ url }) => url.pathname.startsWith("/data/"),
-              handler: "CacheFirst",
+              handler: "StaleWhileRevalidate",
               options: {
                 cacheName: "quran-data",
                 expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 },
+                cacheableResponse: { statuses: [0, 200] },
+              },
+            },
+            {
+              // أصول البناء المُبصمة (hashed) — cache-first
+              urlPattern: ({ url, sameOrigin }) =>
+                sameOrigin && /\/(assets|_build)\//.test(url.pathname),
+              handler: "CacheFirst",
+              options: {
+                cacheName: "app-shell-assets",
+                expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 90 },
               },
             },
             {
