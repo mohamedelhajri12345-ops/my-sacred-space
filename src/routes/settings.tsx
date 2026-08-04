@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import {
   BellRing,
+  Bell,
   BookOpenText,
   Info,
   MapPin,
@@ -12,10 +13,11 @@ import {
   Square,
   Sun,
   Clock3,
+  Star,
 } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { useApp } from "@/lib/app-context";
-import { METHODS, type MethodKey } from "@/lib/prayer";
+import { METHODS, PRAYER_LABELS, type MethodKey, type PrayerKey } from "@/lib/prayer";
 import { RECITERS } from "@/lib/quran";
 import { previewAlertSound, requestNotificationPermission, stopAlertSound } from "@/lib/notifications";
 import { placeLabel } from "@/lib/geo";
@@ -171,6 +173,17 @@ function SettingsPage() {
     setPreviewing(true);
   };
 
+  /** تبديل تنبيه صلاة معينة */
+  const togglePrayerNotification = (prayer: string) => {
+    haptic("light");
+    updateSettings({
+      prayerNotifications: {
+        ...settings.prayerNotifications,
+        [prayer]: !settings.prayerNotifications[prayer],
+      },
+    });
+  };
+
   return (
     <AppShell title="الإعدادات" subtitle="خصّص تجربتك">
       <div className="space-y-4 pb-24">
@@ -192,6 +205,17 @@ function SettingsPage() {
             </button>
           </div>
           {locationError && <p className="text-[11px] text-destructive">{locationError}</p>}
+
+          <Link
+            to="/location"
+            className="flex items-center justify-between rounded-xl border border-border bg-card px-3 py-2.5 text-sm transition-colors hover:bg-secondary"
+          >
+            <div className="flex items-center gap-2">
+              <Star className="size-4 text-muted-foreground" />
+              <span>اختيار المدينة يدوياً</span>
+            </div>
+            <span className="text-muted-foreground">→</span>
+          </Link>
 
           <Toggle
             label="اختيار طريقة الحساب تلقائيًا"
@@ -254,6 +278,39 @@ function SettingsPage() {
             {previewing ? <Square className="size-3.5" /> : <Play className="size-3.5" />}
             {previewing ? "إيقاف المعاينة" : "معاينة صوت الأذان"}
           </button>
+
+          {/* تنبيهات مستقلة لكل صلاة */}
+          <div className="space-y-2">
+            <p className="text-xs font-medium">تنبيهات كل صلاة:</p>
+            <div className="grid grid-cols-2 gap-2">
+              {(Object.keys(PRAYER_LABELS) as PrayerKey[])
+                .filter((key) => key !== "sunrise")
+                .map((prayer) => (
+                  <div
+                    key={prayer}
+                    className={cn(
+                      "flex items-center justify-between rounded-xl border px-3 py-2 text-xs",
+                      settings.prayerNotifications[prayer]
+                        ? "border-primary/30 bg-primary/5"
+                        : "border-border bg-card",
+                    )}
+                  >
+                    <span>{PRAYER_LABELS[prayer]}</span>
+                    <button
+                      onClick={() => togglePrayerNotification(prayer)}
+                      className={cn(
+                        "flex size-6 items-center justify-center rounded-full text-xs",
+                        settings.prayerNotifications[prayer]
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-secondary text-secondary-foreground",
+                      )}
+                    >
+                      <Bell className="size-3" />
+                    </button>
+                  </div>
+                ))}
+            </div>
+          </div>
 
           <Slider
             label={`التذكير المسبق: ${settings.reminderMinutes} دقيقة`}

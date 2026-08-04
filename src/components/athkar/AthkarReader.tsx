@@ -1,11 +1,12 @@
 import { useMemo, useState } from "react";
-import { Check, RotateCcw } from "lucide-react";
+import { Check, RotateCcw, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import type { AthkarCategory } from "@/data/athkar";
 import { haptic } from "@/lib/haptics";
 import { useApp } from "@/lib/app-context";
 import { toArabicNumber } from "@/lib/quran";
 import { cn } from "@/lib/utils";
+import { ShareButtons } from "@/components/share/ShareButtons";
 
 export function AthkarReader({ category }: { category: AthkarCategory }) {
   const { markThikrSession } = useApp();
@@ -79,9 +80,24 @@ export function AthkarReader({ category }: { category: AthkarCategory }) {
             <p className="font-display text-[1.15rem] leading-[2.1]">{item.text}</p>
             {item.note && <p className="mt-2 text-[11px] text-muted-foreground">{item.note}</p>}
             <div className="mt-3 flex items-center justify-between">
-              <span className="text-[11px] text-muted-foreground">
-                التكرار: {toArabicNumber(item.count)}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] text-muted-foreground">
+                  التكرار: {toArabicNumber(item.count)}
+                </span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    haptic("light");
+                    ShareButtons({
+                      text: `${item.text}\n\n${item.note ?? ""}`,
+                      source: category.title,
+                    });
+                  }}
+                  className="rounded-lg p-1.5 text-muted-foreground hover:bg-secondary"
+                >
+                  <Share2 className="size-3.5" />
+                </button>
+              </div>
               <span
                 className={cn(
                   "flex min-w-14 items-center justify-center gap-1 rounded-full px-3 py-1 text-sm font-bold",

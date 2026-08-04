@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { BookOpen, Compass, CalendarDays, Sparkle, Clock, Hand, NotebookPen, Trophy } from "lucide-react";
+import { BookOpen, Compass, CalendarDays, Sparkle, Clock, Hand, NotebookPen, Trophy, Sun, MapPin } from "lucide-react";
 import { haptic } from "@/lib/haptics";
 
 const FEATURES = [
@@ -11,6 +11,8 @@ const FEATURES = [
   { to: "/calendar", title: "التقويم الهجري", desc: "تحويل ومناسبات", icon: CalendarDays },
   { to: "/khatmah", title: "ختمة القرآن", desc: "تقدّمك وبطاقة مشاركة", icon: Trophy },
   { to: "/journal", title: "المفكرة الروحانية", desc: "خواطر محفوظة محليًا", icon: NotebookPen },
+  { to: "/fasting", title: "متابعة الصيام", desc: "سجّل أيام صيامك", icon: Sun },
+  { to: "/location", title: "اختيار الموقع", desc: "المدينة والمواقيت", icon: MapPin },
 ] as const;
 
 export function FeatureGrid() {

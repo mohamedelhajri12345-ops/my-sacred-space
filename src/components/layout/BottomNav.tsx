@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { BookOpen, Compass, Home, CalendarDays, Sparkle } from "lucide-react";
+import { BookOpen, Compass, Home, CalendarDays, Sparkle, Sun } from "lucide-react";
 import { haptic } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 
@@ -7,7 +7,7 @@ const ITEMS = [
   { to: "/", label: "الرئيسية", icon: Home },
   { to: "/quran", label: "القرآن", icon: BookOpen },
   { to: "/athkar", label: "الأذكار", icon: Sparkle },
-  { to: "/qibla", label: "القبلة", icon: Compass },
+  { to: "/fasting", label: "الصيام", icon: Sun },
   { to: "/calendar", label: "التقويم", icon: CalendarDays },
 ] as const;
 
