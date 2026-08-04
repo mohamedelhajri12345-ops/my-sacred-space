@@ -45,7 +45,7 @@ function PrayerPage() {
           <span className="flex items-center gap-2 text-sm">
             <MapPin className="size-4 text-accent" />
             <span dir="ltr" className="text-xs text-muted-foreground">
-              {coords.latitude.toFixed(3)}, {coords.longitude.toFixed(3)}
+              {coords?.latitude?.toFixed(3) ?? "---"}, {coords?.longitude?.toFixed(3) ?? "---"}
             </span>
           </span>
           <button

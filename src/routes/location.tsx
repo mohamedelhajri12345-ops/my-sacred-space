@@ -115,7 +115,7 @@ export function LocationPage() {
     });
     setPlace({
       city: location.city,
-      country: location.location,
+      country: location.country,
       countryCode: location.countryCode,
     });
     updateSettings({ method: location.method as "UmmAlQura", autoMethod: false });
