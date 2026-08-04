@@ -1,4 +1,4 @@
-import { Sunrise, Sun, Sunset, Moon, CloudSun, Star } from "lucide-react";
+import { Sunrise, Sun, Sunset, Moon, CloudSun, Star, Loader2 } from "lucide-react";
 import { useAdhanScheduler } from "@/hooks/use-adhan-scheduler";
 import { formatTime, type PrayerKey } from "@/lib/prayer";
 import { cn } from "@/lib/utils";
@@ -13,14 +13,34 @@ const ICONS: Record<PrayerKey, typeof Sun> = {
 };
 
 export function PrayerTimesList() {
-  const { timings, next, now } = useAdhanScheduler();
+  const { timings, next, now, isLoading, error } = useAdhanScheduler();
+
+  // حالة التحميل
+  if (isLoading) {
+    return (
+      <div className="surface-card p-6 flex flex-col items-center justify-center">
+        <Loader2 className="size-6 animate-spin text-muted-foreground mb-3" />
+        <p className="text-sm text-muted-foreground">جارٍ تحميل مواقيت الصلاة...</p>
+      </div>
+    );
+  }
+
+  // حالة الخطأ
+  if (error || !timings || timings.length === 0) {
+    return (
+      <div className="surface-card p-6 flex flex-col items-center justify-center text-center">
+        <p className="text-sm text-muted-foreground mb-2">تعذر تحميل مواقيت الصلاة</p>
+        <p className="text-xs text-muted-foreground/70">سيتم استخدام الإعدادات الافتراضية</p>
+      </div>
+    );
+  }
 
   return (
     <ul className="space-y-2">
       {timings.map((p) => {
         const Icon = ICONS[p.key];
-        const isNext = p.key === next.key && next.date.toDateString() === p.date.toDateString();
-        const passed = p.date.getTime() < now.getTime();
+        const isNext = next && p.key === next.key && next.date?.toDateString() === p.date?.toDateString();
+        const passed = p.date?.getTime() < now.getTime();
         return (
           <li
             key={p.key}
@@ -50,7 +70,7 @@ export function PrayerTimesList() {
               </div>
             </div>
             <span dir="ltr" className="text-base font-bold tabular-nums">
-              {formatTime(p.date)}
+              {p.date ? formatTime(p.date) : "--:--"}
             </span>
           </li>
         );

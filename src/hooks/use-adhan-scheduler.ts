@@ -1,6 +1,14 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { useApp } from "@/lib/app-context";
-import { getDayTimings, getLastThird, getNextPrayer, type PrayerEntry, OBLIGATORY_PRAYERS } from "@/lib/prayer";
+import { 
+  getDayTimings, 
+  getLastThird, 
+  getNextPrayer, 
+  isValidCoords, 
+  DEFAULT_COORDS,
+  type PrayerEntry,
+  OBLIGATORY_PRAYERS 
+} from "@/lib/prayer";
 import { playAlertSound, showLocalNotification } from "@/lib/notifications";
 import { gregorianToHijri } from "@/lib/hijri";
 import { haptic } from "@/lib/haptics";
@@ -15,49 +23,110 @@ export function fastingDayLabel(date: Date): string | null {
   return null;
 }
 
-export function useAdhanScheduler() {
-  const { coords, settings } = useApp();
-  const [now, setNow] = useState(() => new Date());
-  const firedRef = useRef<Set<string>>(new Set());
+export type AdhanSchedulerState = {
+  now: Date;
+  next: PrayerEntry | null;
+  timings: PrayerEntry[];
+  inKhushuWindow: boolean;
+  remaining: number;
+  enabledPrayers: Record<string, boolean>;
+  isLoading: boolean;
+  error: string | null;
+};
 
+export function useAdhanScheduler(): AdhanSchedulerState {
+  const { coords: appCoords, settings } = useApp();
+  const [now, setNow] = useState(() => new Date());
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const firedRef = useRef<Set<string>>(new Set());
+  const initializedRef = useRef(false);
+
+  // التحقق من صحة الإحداثيات واستخدام الإعدادات الافتراضية
+  const coords = useMemo(() => {
+    if (!isValidCoords(appCoords)) {
+      console.warn("إحداثيات غير صالحة، استخدام الإعدادات الافتراضية:", appCoords);
+      return DEFAULT_COORDS;
+    }
+    return appCoords;
+  }, [appCoords]);
+
+  // تحديث الوقت كل ثانية
   useEffect(() => {
-    const id = window.setInterval(() => setNow(new Date()), 1000);
+    const id = window.setInterval(() => {
+      setNow(new Date());
+    }, 1000);
     return () => window.clearInterval(id);
   }, []);
 
-  const next: PrayerEntry = getNextPrayer(
-    coords, 
-    settings.method, 
-    now, 
-    settings.prayerAdjustments,
-    settings.enabledPrayers
-  );
-  const timings = getDayTimings(
-    coords, 
-    settings.method, 
-    now, 
-    settings.prayerAdjustments
-  );
+  // حساب المواقيت مع معالجة الأخطاء
+  const { next, timings } = useMemo(() => {
+    try {
+      setError(null);
+      
+      // حساب الصلاة القادمة
+      const nextPrayer = getNextPrayer(
+        coords, 
+        settings.method, 
+        now, 
+        settings.prayerAdjustments,
+        settings.enabledPrayers
+      );
+      
+      // حساب مواقيت اليوم
+      const dayTimings = getDayTimings(
+        coords, 
+        settings.method, 
+        now, 
+        settings.prayerAdjustments
+      );
+      
+      // التحقق من صحة النتائج
+      if (!dayTimings || dayTimings.length === 0) {
+        throw new Error("فشل في حساب مواقيت الصلاة");
+      }
+      
+      return { next: nextPrayer, timings: dayTimings };
+    } catch (err) {
+      console.error("خطأ في حساب المواقيت:", err);
+      setError(err instanceof Error ? err.message : "خطأ غير معروف");
+      return { next: null, timings: [] };
+    }
+  }, [coords, settings.method, now, settings.prayerAdjustments, settings.enabledPrayers]);
 
   // وضع الخشوع: نافذة هدوء بعد دخول كل صلاة.
-  const inKhushuWindow =
-    settings.khushuMode &&
-    timings.some((p) => {
+  const inKhushuWindow = useMemo(() => {
+    if (!settings.khushuMode) return false;
+    if (!timings || timings.length === 0) return false;
+    
+    return timings.some((p) => {
       if (p.key === "sunrise") return false;
-      // التحقق من تفعيل الصلاة
       if (settings.enabledPrayers[p.key] === false) return false;
+      if (!p.date) return false;
       const diff = now.getTime() - p.date.getTime();
       return diff >= 0 && diff < settings.khushuMinutes * 60000;
     });
+  }, [settings.khushuMode, settings.khushuMinutes, settings.enabledPrayers, timings, now]);
 
+  // حساب الوقت المتبقي للصلاة القادمة
+  const remaining = useMemo(() => {
+    if (!next?.date) return 0;
+    return Math.max(0, next.date.getTime() - now.getTime());
+  }, [next, now]);
+
+  // تأثير معالجة الإشعارات
   useEffect(() => {
     if (!settings.notificationsEnabled) return;
+    if (!timings || timings.length === 0) return;
+    
     const fired = firedRef.current;
     const day = now.toDateString();
+    
     const hit = (target: number) => {
       const diff = target - now.getTime();
       return diff <= 0 && diff > -1500;
     };
+    
     const approaching = (target: number, minutes: number) => {
       const diff = target - now.getTime();
       return diff <= minutes * 60000 && diff > minutes * 60000 - 1500;
@@ -67,6 +136,8 @@ export function useAdhanScheduler() {
       // تخطي الصلوات المعطلة
       if (settings.enabledPrayers[p.key] === false) continue;
       if (p.key === "sunrise") continue;
+      if (!p.date) continue;
+      
       const t = p.date.getTime();
 
       // تذكير الوضوء قبل الأذان
@@ -105,15 +176,19 @@ export function useAdhanScheduler() {
 
     // تذكير قيام الليل والوتر عند دخول الثلث الأخير
     if (settings.qiyamReminder) {
-      const { lastThirdOfTheNight } = getLastThird(coords, settings.method, now);
-      if (hit(lastThirdOfTheNight.getTime())) {
-        const key = `${day}:qiyam`;
-        if (!fired.has(key)) {
-          fired.add(key);
-          showLocalNotification("قيام الليل", "دخل الثلث الأخير من الليل — لا تنسَ القيام والوتر");
-          playAlertSound(settings.alertKind === "silent" ? "silent" : "beep");
-          haptic("medium");
+      try {
+        const { lastThirdOfTheNight } = getLastThird(coords, settings.method, now);
+        if (lastThirdOfTheNight && hit(lastThirdOfTheNight.getTime())) {
+          const key = `${day}:qiyam`;
+          if (!fired.has(key)) {
+            fired.add(key);
+            showLocalNotification("قيام الليل", "دخل الثلث الأخير من الليل — لا تنسَ القيام والوتر");
+            playAlertSound(settings.alertKind === "silent" ? "silent" : "beep");
+            haptic("medium");
+          }
         }
+      } catch (e) {
+        console.error("خطأ في تذكير قيام الليل:", e);
       }
     }
 
@@ -145,12 +220,28 @@ export function useAdhanScheduler() {
     settings.prayerAdjustments,
   ]);
 
+  // تحديد حالة التحميل
+  useEffect(() => {
+    if (!initializedRef.current) {
+      initializedRef.current = true;
+      // إعطاء وقت قصير للتحميل الأولي
+      const timer = setTimeout(() => {
+        setIsLoading(false);
+      }, 100);
+      return () => clearTimeout(timer);
+    } else {
+      setIsLoading(false);
+    }
+  }, [next, timings]);
+
   return { 
     now, 
     next, 
     timings, 
     inKhushuWindow, 
-    remaining: next.date.getTime() - now.getTime(),
+    remaining,
     enabledPrayers: settings.enabledPrayers,
+    isLoading,
+    error,
   };
 }
