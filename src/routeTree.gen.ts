@@ -11,6 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CalendarRouteImport } from './routes/calendar'
+import { Route as JournalRouteImport } from './routes/journal'
+import { Route as KhatmahRouteImport } from './routes/khatmah'
 import { Route as PrayerRouteImport } from './routes/prayer'
 import { Route as QiblaRouteImport } from './routes/qibla'
 import { Route as SettingsRouteImport } from './routes/settings'
@@ -28,6 +30,16 @@ const IndexRoute = IndexRouteImport.update({
 const CalendarRoute = CalendarRouteImport.update({
   id: '/calendar',
   path: '/calendar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JournalRoute = JournalRouteImport.update({
+  id: '/journal',
+  path: '/journal',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const KhatmahRoute = KhatmahRouteImport.update({
+  id: '/khatmah',
+  path: '/khatmah',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrayerRoute = PrayerRouteImport.update({
@@ -74,6 +86,8 @@ const QuranSurahIdRoute = QuranSurahIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/calendar': typeof CalendarRoute
+  '/journal': typeof JournalRoute
+  '/khatmah': typeof KhatmahRoute
   '/prayer': typeof PrayerRoute
   '/qibla': typeof QiblaRoute
   '/settings': typeof SettingsRoute
@@ -86,6 +100,8 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/calendar': typeof CalendarRoute
+  '/journal': typeof JournalRoute
+  '/khatmah': typeof KhatmahRoute
   '/prayer': typeof PrayerRoute
   '/qibla': typeof QiblaRoute
   '/settings': typeof SettingsRoute
@@ -99,6 +115,8 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/calendar': typeof CalendarRoute
+  '/journal': typeof JournalRoute
+  '/khatmah': typeof KhatmahRoute
   '/prayer': typeof PrayerRoute
   '/qibla': typeof QiblaRoute
   '/settings': typeof SettingsRoute
@@ -113,6 +131,8 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/calendar'
+    | '/journal'
+    | '/khatmah'
     | '/prayer'
     | '/qibla'
     | '/settings'
@@ -125,6 +145,8 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/calendar'
+    | '/journal'
+    | '/khatmah'
     | '/prayer'
     | '/qibla'
     | '/settings'
@@ -137,6 +159,8 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/calendar'
+    | '/journal'
+    | '/khatmah'
     | '/prayer'
     | '/qibla'
     | '/settings'
@@ -150,6 +174,8 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CalendarRoute: typeof CalendarRoute
+  JournalRoute: typeof JournalRoute
+  KhatmahRoute: typeof KhatmahRoute
   PrayerRoute: typeof PrayerRoute
   QiblaRoute: typeof QiblaRoute
   SettingsRoute: typeof SettingsRoute
@@ -174,6 +200,20 @@ declare module '@tanstack/react-router' {
       path: '/calendar'
       fullPath: '/calendar'
       preLoaderRoute: typeof CalendarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/journal': {
+      id: '/journal'
+      path: '/journal'
+      fullPath: '/journal'
+      preLoaderRoute: typeof JournalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/khatmah': {
+      id: '/khatmah'
+      path: '/khatmah'
+      fullPath: '/khatmah'
+      preLoaderRoute: typeof KhatmahRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/prayer': {
@@ -238,6 +278,8 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CalendarRoute: CalendarRoute,
+  JournalRoute: JournalRoute,
+  KhatmahRoute: KhatmahRoute,
   PrayerRoute: PrayerRoute,
   QiblaRoute: QiblaRoute,
   SettingsRoute: SettingsRoute,

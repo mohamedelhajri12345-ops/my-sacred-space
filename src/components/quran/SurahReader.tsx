@@ -1,12 +1,24 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { BookMarked, BookOpenText, Loader2, Pause, Play, SkipBack, SkipForward, X } from "lucide-react";
+import {
+  BookMarked,
+  BookOpenText,
+  ChevronLeft,
+  ChevronRight,
+  Languages,
+  Loader2,
+  Pause,
+  Play,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import {
+  ayahAudioUrl,
+  getReciter,
   globalAyahNumber,
   loadQuran,
   loadTafsir,
-  RECITERS,
+  loadTranslation,
   toArabicNumber,
   type Bookmark,
   type ReadingProgress,
@@ -23,21 +35,28 @@ export function SurahReader({
   surahId: number;
   initialAyah?: number | undefined;
 }) {
-  const { settings, online } = useApp();
+  const { settings, updateSettings, online } = useApp();
   const [selected, setSelected] = useState<number | null>(null);
-  const [playing, setPlaying] = useState<number | null>(null);
+  const [current, setCurrent] = useState<number | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [buffering, setBuffering] = useState(false);
+  const [position, setPosition] = useState(0);
+  const [duration, setDuration] = useState(0);
   const [bookmarks, setBookmarks] = useLocalStorage<Bookmark[]>("islamic:bookmarks", []);
   const [, setProgress] = useLocalStorage<ReadingProgress | null>("islamic:progress", null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const { data, isLoading } = useQuery({ queryKey: ["quran"], queryFn: loadQuran, staleTime: Infinity });
   const { data: tafsir } = useQuery({ queryKey: ["tafsir"], queryFn: loadTafsir, staleTime: Infinity });
+  const { data: translation } = useQuery({
+    queryKey: ["translation-en"],
+    queryFn: loadTranslation,
+    staleTime: Infinity,
+    enabled: settings.showTranslation,
+  });
 
   const surah = data?.find((s) => s.i === surahId);
-  const reciter = useMemo(
-    () => RECITERS.find((r) => r.id === settings.reciter) ?? RECITERS[0]!,
-    [settings.reciter],
-  );
+  const reciter = useMemo(() => getReciter(settings.reciter), [settings.reciter]);
 
   useEffect(() => {
     if (!initialAyah) return;
@@ -45,50 +64,154 @@ export function SurahReader({
     el?.scrollIntoView({ behavior: "smooth", block: "center" });
   }, [initialAyah, data]);
 
-  const markRead = (ayah: number) => {
-    if (!data) return;
-    setProgress({
-      surah: surahId,
-      ayah,
-      readAyahs: globalAyahNumber(data, surahId, ayah),
-      updatedAt: Date.now(),
-    });
-  };
+  const markRead = useCallback(
+    (ayah: number) => {
+      if (!data) return;
+      setProgress({
+        surah: surahId,
+        ayah,
+        readAyahs: globalAyahNumber(data, surahId, ayah),
+        updatedAt: Date.now(),
+      });
+    },
+    [data, setProgress, surahId],
+  );
 
-  const play = (ayah: number) => {
-    if (!data) return;
-    if (!online) {
-      toast.error("التلاوة الصوتية تحتاج اتصالًا بالإنترنت");
+  // عنصر صوت واحد يُعاد استخدامه مع كل الأحداث
+  const ensureAudio = useCallback(() => {
+    if (audioRef.current) return audioRef.current;
+    const audio = new Audio();
+    audio.preload = "auto";
+    audioRef.current = audio;
+    return audio;
+  }, []);
+
+  const playAyah = useCallback(
+    (ayah: number) => {
+      if (!surah) return;
+      if (ayah < 1 || ayah > surah.c) return;
+      if (!online) {
+        toast.error("التلاوة الصوتية تحتاج اتصالًا بالإنترنت");
+        return;
+      }
+      const audio = ensureAudio();
+      const src = ayahAudioUrl(settings.reciter, surahId, ayah);
+      setCurrent(ayah);
+      setBuffering(true);
+      setPosition(0);
+      setDuration(0);
+      audio.src = src;
+      audio.load();
+      void audio
+        .play()
+        .then(() => {
+          setIsPlaying(true);
+          markRead(ayah);
+          document.getElementById(`ayah-${ayah}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+        })
+        .catch((err: unknown) => {
+          setIsPlaying(false);
+          setBuffering(false);
+          const name = err instanceof Error ? err.name : "";
+          toast.error(
+            name === "NotAllowedError"
+              ? "اضغط زر التشغيل مرة أخرى للسماح بتشغيل الصوت"
+              : "تعذّر تحميل ملف التلاوة، تحقّق من الاتصال أو جرّب قارئًا آخر",
+          );
+        });
+    },
+    [ensureAudio, markRead, online, settings.reciter, surah, surahId],
+  );
+
+  // ربط أحداث المشغّل
+  useEffect(() => {
+    const audio = ensureAudio();
+    const onTime = () => setPosition(audio.currentTime);
+    const onMeta = () => {
+      setDuration(Number.isFinite(audio.duration) ? audio.duration : 0);
+      setBuffering(false);
+    };
+    const onPlay = () => {
+      setIsPlaying(true);
+      setBuffering(false);
+    };
+    const onPause = () => setIsPlaying(false);
+    const onWaiting = () => setBuffering(true);
+    const onError = () => {
+      setIsPlaying(false);
+      setBuffering(false);
+      toast.error("تعذّر تشغيل التلاوة لهذه الآية، جرّب قارئًا آخر من الإعدادات");
+    };
+    audio.addEventListener("timeupdate", onTime);
+    audio.addEventListener("loadedmetadata", onMeta);
+    audio.addEventListener("playing", onPlay);
+    audio.addEventListener("pause", onPause);
+    audio.addEventListener("waiting", onWaiting);
+    audio.addEventListener("error", onError);
+    return () => {
+      audio.removeEventListener("timeupdate", onTime);
+      audio.removeEventListener("loadedmetadata", onMeta);
+      audio.removeEventListener("playing", onPlay);
+      audio.removeEventListener("pause", onPause);
+      audio.removeEventListener("waiting", onWaiting);
+      audio.removeEventListener("error", onError);
+    };
+  }, [ensureAudio]);
+
+  // تشغيل تلقائي للآية التالية
+  useEffect(() => {
+    const audio = ensureAudio();
+    const onEnded = () => {
+      if (current !== null && surah && current < surah.c) playAyah(current + 1);
+      else {
+        setIsPlaying(false);
+        setCurrent(null);
+      }
+    };
+    audio.addEventListener("ended", onEnded);
+    return () => audio.removeEventListener("ended", onEnded);
+  }, [current, ensureAudio, playAyah, surah]);
+
+  useEffect(
+    () => () => {
+      audioRef.current?.pause();
+      audioRef.current = null;
+    },
+    [],
+  );
+
+  const toggle = (ayah: number) => {
+    haptic("light");
+    const audio = ensureAudio();
+    if (current === ayah && isPlaying) {
+      audio.pause();
       return;
     }
-    const global = globalAyahNumber(data, surahId, ayah);
-    const audio = audioRef.current ?? new Audio();
-    audioRef.current = audio;
-    audio.src = `${reciter.base}/${global}.mp3`;
-    audio.onended = () => {
-      if (surah && ayah < surah.c) play(ayah + 1);
-      else setPlaying(null);
-    };
-    audio.onerror = () => {
-      setPlaying(null);
-      toast.error("تعذّر تشغيل التلاوة");
-    };
-    void audio.play();
-    setPlaying(ayah);
-    markRead(ayah);
+    if (current === ayah && !isPlaying && audio.src) {
+      void audio.play().catch(() => toast.error("تعذّر متابعة التشغيل"));
+      return;
+    }
+    playAyah(ayah);
   };
 
-  const stop = () => {
-    audioRef.current?.pause();
-    setPlaying(null);
+  const closePlayer = () => {
+    ensureAudio().pause();
+    setIsPlaying(false);
+    setCurrent(null);
   };
 
-  useEffect(() => () => audioRef.current?.pause(), []);
+  const seek = (value: number) => {
+    const audio = ensureAudio();
+    if (!Number.isFinite(audio.duration)) return;
+    audio.currentTime = value;
+    setPosition(value);
+  };
 
   if (isLoading || !surah) {
     return (
-      <div className="flex items-center justify-center gap-2 py-20 text-muted-foreground">
-        <Loader2 className="size-4 animate-spin" /> جارٍ التحميل…
+      <div className="flex flex-col items-center justify-center gap-3 py-20 text-muted-foreground">
+        <Loader2 className="size-6 animate-spin text-accent" />
+        <p className="text-sm">جارٍ تحميل المصحف…</p>
       </div>
     );
   }
@@ -109,9 +232,16 @@ export function SurahReader({
     }
   };
 
+  const fmt = (s: number) => {
+    if (!Number.isFinite(s) || s <= 0) return "٠:٠٠";
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60);
+    return `${m}:${String(sec).padStart(2, "0")}`;
+  };
+
   return (
-    <div className="space-y-4 pb-24">
-      <div className="surface-card gradient-warm p-5 text-center text-primary-foreground">
+    <div className="space-y-4 pb-40">
+      <div className="surface-card gradient-warm glass-panel p-5 text-center text-primary-foreground">
         <p className="text-xs opacity-80">
           {surah.t === "meccan" ? "مكية" : "مدنية"} · {toArabicNumber(surah.c)} آية
         </p>
@@ -123,16 +253,33 @@ export function SurahReader({
         )}
       </div>
 
+      <div className="flex items-center justify-between gap-2">
+        <button
+          onClick={() => {
+            haptic("light");
+            updateSettings({ showTranslation: !settings.showTranslation });
+          }}
+          className={cn(
+            "press flex items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-xs font-medium",
+            settings.showTranslation ? "gradient-gold border-transparent text-gold-foreground" : "bg-card text-muted-foreground",
+          )}
+        >
+          <Languages className="size-3.5" /> الترجمة الإنجليزية
+        </button>
+        <span className="truncate text-[11px] text-muted-foreground">القارئ: {reciter.name}</span>
+      </div>
+
       <div className="space-y-2">
         {surah.v.map((text, index) => {
           const ayah = index + 1;
+          const active = current === ayah;
           return (
             <div
               key={ayah}
               id={`ayah-${ayah}`}
               className={cn(
                 "surface-card p-4 transition-colors",
-                playing === ayah && "border-[color-mix(in_oklab,var(--gold)_65%,transparent)] bg-accent/10",
+                active && "border-[color-mix(in_oklab,var(--gold)_65%,transparent)] bg-accent/10",
                 initialAyah === ayah && "ring-2 ring-ring",
               )}
             >
@@ -149,13 +296,27 @@ export function SurahReader({
                   {toArabicNumber(ayah)}
                 </span>
               </p>
+              {settings.showTranslation && (
+                <p dir="ltr" className="mt-2 border-t border-border/60 pt-2 text-left text-[13px] leading-6 text-muted-foreground">
+                  {translation?.[surahId - 1]?.[index] ?? "Loading translation…"}
+                </p>
+              )}
               <div className="mt-3 flex items-center gap-2">
                 <button
-                  onClick={() => (playing === ayah ? stop() : play(ayah))}
-                  className="press flex size-8 items-center justify-center rounded-lg bg-secondary text-primary"
-                  aria-label="تشغيل التلاوة"
+                  onClick={() => toggle(ayah)}
+                  className={cn(
+                    "press flex size-8 items-center justify-center rounded-lg",
+                    active && isPlaying ? "gradient-gold text-gold-foreground" : "bg-secondary text-primary",
+                  )}
+                  aria-label={active && isPlaying ? "إيقاف التلاوة" : "تشغيل التلاوة"}
                 >
-                  {playing === ayah ? <Pause className="size-4" /> : <Play className="size-4" />}
+                  {active && buffering ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : active && isPlaying ? (
+                    <Pause className="size-4" />
+                  ) : (
+                    <Play className="size-4" />
+                  )}
                 </button>
                 <button
                   onClick={() => toggleBookmark(ayah)}
@@ -182,35 +343,74 @@ export function SurahReader({
         })}
       </div>
 
-      {playing !== null && (
-        <div className="fixed inset-x-0 bottom-20 z-40 mx-auto flex max-w-xl items-center justify-between gap-3 rounded-2xl border border-border bg-card/95 px-4 py-3 backdrop-blur">
-          <div className="min-w-0">
-            <p className="truncate text-sm font-bold">
-              {surah.n} — الآية {toArabicNumber(playing)}
-            </p>
-            <p className="truncate text-[11px] text-muted-foreground">{reciter.name}</p>
+      {current !== null && (
+        <div className="fixed inset-x-0 bottom-20 z-40 mx-auto w-[calc(100%-1.5rem)] max-w-xl rounded-2xl border border-border bg-card/95 px-4 py-3 backdrop-blur-xl">
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="truncate text-sm font-bold">
+                {surah.n} — الآية {toArabicNumber(current)}
+              </p>
+              <p className="truncate text-[11px] text-muted-foreground">{reciter.name}</p>
+            </div>
+            <button
+              onClick={closePlayer}
+              aria-label="إغلاق المشغل"
+              className="press flex size-8 items-center justify-center rounded-lg bg-secondary text-muted-foreground"
+            >
+              <X className="size-4" />
+            </button>
           </div>
+
           <div className="flex items-center gap-2">
+            <span className="w-9 text-[10px] tabular-nums text-muted-foreground">{fmt(position)}</span>
+            <input
+              type="range"
+              min={0}
+              max={duration || 0}
+              step={0.1}
+              value={Math.min(position, duration || 0)}
+              onChange={(e) => seek(Number(e.target.value))}
+              aria-label="شريط التقدم"
+              className="h-1.5 flex-1 accent-[var(--gold)]"
+            />
+            <span className="w-9 text-[10px] tabular-nums text-muted-foreground">{fmt(duration)}</span>
+          </div>
+
+          <div className="mt-2 flex items-center justify-center gap-3">
             <button
-              onClick={() => playing > 1 && play(playing - 1)}
-              className="press flex size-9 items-center justify-center rounded-xl bg-secondary"
-              aria-label="السابق"
+              onClick={() => {
+                haptic("light");
+                playAyah(current - 1);
+              }}
+              disabled={current <= 1}
+              className="press flex size-9 items-center justify-center rounded-xl bg-secondary disabled:opacity-40"
+              aria-label="الآية السابقة"
             >
-              <SkipForward className="size-4" />
+              <ChevronRight className="size-4" />
             </button>
             <button
-              onClick={stop}
-              className="press flex size-9 items-center justify-center rounded-xl gradient-warm text-primary-foreground"
-              aria-label="إيقاف"
+              onClick={() => toggle(current)}
+              className="press flex size-11 items-center justify-center rounded-2xl gradient-warm text-primary-foreground"
+              aria-label={isPlaying ? "إيقاف" : "تشغيل"}
             >
-              <Pause className="size-4" />
+              {buffering ? (
+                <Loader2 className="size-5 animate-spin" />
+              ) : isPlaying ? (
+                <Pause className="size-5" />
+              ) : (
+                <Play className="size-5" />
+              )}
             </button>
             <button
-              onClick={() => playing < surah.c && play(playing + 1)}
-              className="press flex size-9 items-center justify-center rounded-xl bg-secondary"
-              aria-label="التالي"
+              onClick={() => {
+                haptic("light");
+                playAyah(current + 1);
+              }}
+              disabled={current >= surah.c}
+              className="press flex size-9 items-center justify-center rounded-xl bg-secondary disabled:opacity-40"
+              aria-label="الآية التالية"
             >
-              <SkipBack className="size-4" />
+              <ChevronLeft className="size-4" />
             </button>
           </div>
         </div>
@@ -232,7 +432,7 @@ export function SurahReader({
               </button>
             </div>
             <p className="quran-text mb-4 text-[1.35rem]">{surah.v[selected - 1]}</p>
-            <div className="ornament-divider mb-4" />
+            <div className="divider-geo mb-4" />
             <p className="whitespace-pre-wrap text-sm leading-8 text-muted-foreground">
               {tafsir?.[surahId - 1]?.[selected - 1] ?? "جارٍ تحميل التفسير…"}
             </p>

@@ -269,6 +269,60 @@
   animation: bead-pop 0.28s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* ===== خلفية متحركة + تأثير زجاجي ===== */
+@keyframes drift {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(2.5%, -3%, 0) rotate(8deg);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+}
+
+@utility animate-drift-slow {
+  animation: drift 34s ease-in-out infinite;
+}
+
+@utility animate-drift-slower {
+  animation: drift 52s ease-in-out infinite reverse;
+}
+
+@keyframes spin-very-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@utility animate-spin-very-slow {
+  animation: spin-very-slow 180s linear infinite;
+}
+
+@keyframes glow-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(-3%, 4%, 0) scale(1.08);
+  }
+}
+
+@utility animate-glow-float {
+  animation: glow-float 28s ease-in-out infinite;
+}
+
+@utility glass-panel {
+  background-color: color-mix(in oklab, var(--card) 62%, transparent);
+  backdrop-filter: blur(18px) saturate(140%);
+  border: 1px solid color-mix(in oklab, var(--gold) 22%, transparent);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

@@ -9,6 +9,7 @@ export type Surah = {
 
 let quranCache: Surah[] | null = null;
 let tafsirCache: string[][] | null = null;
+let translationCache: string[][] | null = null;
 
 export async function loadQuran(): Promise<Surah[]> {
   if (quranCache) return quranCache;
@@ -24,6 +25,15 @@ export async function loadTafsir(): Promise<string[][]> {
   if (!res.ok) throw new Error("تعذّر تحميل التفسير");
   tafsirCache = (await res.json()) as string[][];
   return tafsirCache;
+}
+
+/** ترجمة معاني القرآن إلى الإنجليزية (Sahih International). */
+export async function loadTranslation(): Promise<string[][]> {
+  if (translationCache) return translationCache;
+  const res = await fetch("/data/translation-en.json");
+  if (!res.ok) throw new Error("تعذّر تحميل الترجمة");
+  translationCache = (await res.json()) as string[][];
+  return translationCache;
 }
 
 const DIACRITICS = /[\u064B-\u0652\u0670\u06D6-\u06ED\u0640]/g;
@@ -66,12 +76,32 @@ export function toArabicNumber(n: number) {
 export type Bookmark = { surah: number; ayah: number; surahName: string; text: string; at: number };
 export type ReadingProgress = { surah: number; ayah: number; readAyahs: number; updatedAt: number };
 
-export const RECITERS = [
-  { id: "ar.alafasy", name: "مشاري راشد العفاسي", base: "https://cdn.islamic.network/quran/audio/128/ar.alafasy" },
-  { id: "ar.abdulbasitmurattal", name: "عبد الباسط عبد الصمد", base: "https://cdn.islamic.network/quran/audio/128/ar.abdulbasitmurattal" },
-  { id: "ar.husary", name: "محمود خليل الحصري", base: "https://cdn.islamic.network/quran/audio/128/ar.husary" },
-  { id: "ar.minshawi", name: "محمد صديق المنشاوي", base: "https://cdn.islamic.network/quran/audio/128/ar.minshawi" },
+export type Reciter = { id: string; name: string; dir: string };
+
+/**
+ * مصادر التلاوة من everyayah.com (ملف mp3 لكل آية، بترقيم سورة/آية).
+ * تم التحقق من توفّر كل مجلد.
+ */
+export const RECITERS: Reciter[] = [
+  { id: "ar.alafasy", name: "مشاري راشد العفاسي", dir: "Alafasy_128kbps" },
+  { id: "ar.mahermuaiqly", name: "ماهر المعيقلي", dir: "MaherAlMuaiqly128kbps" },
+  { id: "ar.yasserdossari", name: "ياسر الدوسري", dir: "Yasser_Ad-Dussary_128kbps" },
+  { id: "ar.abdulbasitmurattal", name: "عبد الباسط عبد الصمد", dir: "Abdul_Basit_Murattal_192kbps" },
+  { id: "ar.husary", name: "محمود خليل الحصري", dir: "Husary_128kbps" },
+  { id: "ar.minshawi", name: "محمد صديق المنشاوي", dir: "Minshawy_Murattal_128kbps" },
 ];
+
+const pad3 = (n: number) => String(n).padStart(3, "0");
+
+export function getReciter(id: string): Reciter {
+  return RECITERS.find((r) => r.id === id) ?? RECITERS[0]!;
+}
+
+/** رابط تلاوة آية محددة للقارئ المختار. */
+export function ayahAudioUrl(reciterId: string, surah: number, ayah: number) {
+  const r = getReciter(reciterId);
+  return `https://everyayah.com/data/${r.dir}/${pad3(surah)}${pad3(ayah)}.mp3`;
+}
 
 /** Global ayah number (1-6236) needed by most recitation CDNs. */
 export function globalAyahNumber(data: Surah[], surah: number, ayah: number) {

@@ -5,6 +5,7 @@ import { useApp } from "@/lib/app-context";
 import { formatHijri } from "@/lib/hijri";
 import { haptic } from "@/lib/haptics";
 import { BottomNav } from "./BottomNav";
+import { AnimatedBackground } from "./AnimatedBackground";
 
 export function AppShell({
   children,
@@ -20,7 +21,11 @@ export function AppShell({
 
   return (
     <div className="relative min-h-screen pb-28">
-      <div aria-hidden className="pattern-geo pointer-events-none fixed inset-0 -z-10 opacity-[0.35]" />
+      {settings.animatedBackground ? (
+        <AnimatedBackground />
+      ) : (
+        <div aria-hidden className="pattern-geo pointer-events-none fixed inset-0 -z-10 opacity-[0.35]" />
+      )}
       <header className="sticky top-0 z-30 border-b border-border/60 bg-background/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-xl items-center justify-between gap-3 px-4 py-3">
           <div className="min-w-0">

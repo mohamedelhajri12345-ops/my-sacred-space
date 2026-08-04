@@ -19,31 +19,44 @@ export function showLocalNotification(title: string, body: string) {
   }
 }
 
-let audioContext: AudioContext | null = null;
+/**
+ * تسجيل أذان حقيقي من المسجد الحرام (أرشيف عام على archive.org) مخزّن محليًا،
+ * ومقطع قصير منه يُستخدم للتذكيرات الخفيفة. لا تُستخدم أي نغمات مُركّبة.
+ */
+export const ADHAN_FULL_SRC = "/audio/adhan.mp3";
+export const ADHAN_SHORT_SRC = "/audio/adhan-short.mp3";
 
+let alertAudio: HTMLAudioElement | null = null;
+
+function getAlertAudio() {
+  if (typeof window === "undefined") return null;
+  alertAudio = alertAudio ?? new Audio();
+  return alertAudio;
+}
+
+export function stopAlertSound() {
+  if (!alertAudio) return;
+  alertAudio.pause();
+  alertAudio.currentTime = 0;
+}
+
+/** تشغيل صوت الأذان الحقيقي (كامل أو مقطع قصير) حسب نوع التنبيه. */
 export function playAlertSound(kind: AlertKind) {
-  if (kind === "silent" || typeof window === "undefined") return;
+  if (kind === "silent") return;
+  const audio = getAlertAudio();
+  if (!audio) return;
   try {
-    const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-    audioContext = audioContext ?? new Ctor();
-    const ctx = audioContext;
-    const now = ctx.currentTime;
-    const notes = kind === "adhan" ? [392, 440, 523.25, 440, 392] : [660, 880];
-    notes.forEach((freq, index) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = "sine";
-      osc.frequency.value = freq;
-      const start = now + index * (kind === "adhan" ? 0.55 : 0.22);
-      const dur = kind === "adhan" ? 0.5 : 0.18;
-      gain.gain.setValueAtTime(0.0001, start);
-      gain.gain.exponentialRampToValueAtTime(0.25, start + 0.05);
-      gain.gain.exponentialRampToValueAtTime(0.0001, start + dur);
-      osc.connect(gain).connect(ctx.destination);
-      osc.start(start);
-      osc.stop(start + dur + 0.05);
-    });
+    audio.pause();
+    audio.src = kind === "adhan" ? ADHAN_FULL_SRC : ADHAN_SHORT_SRC;
+    audio.currentTime = 0;
+    audio.volume = 1;
+    void audio.play().catch(() => undefined);
   } catch {
     /* ignore */
   }
+}
+
+/** معاينة الصوت من صفحة الإعدادات. */
+export function previewAlertSound(kind: AlertKind) {
+  playAlertSound(kind === "silent" ? "beep" : kind);
 }
