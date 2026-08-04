@@ -1,13 +1,38 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { BookOpen, Compass, Home, CalendarDays, Sparkle, Sun } from "lucide-react";
+import { BookOpen, CalendarDays, Home, MoonStar, Sparkles, Sun, Mosque } from "lucide-react";
 import { haptic } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
+
+// أيقونات إسلامية مخصصة
+function IslamicPrayerIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2C10 2 8 4 8 6C8 8 10 10 12 10C14 10 16 8 16 6C16 4 14 2 12 2Z" />
+      <path d="M12 10V14" />
+      <path d="M8 14L12 18L16 14" />
+      <path d="M6 20H18" />
+    </svg>
+  );
+}
+
+function TasbihIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="8" />
+      <circle cx="12" cy="12" r="3" />
+      <path d="M12 4V8" />
+      <path d="M12 16V20" />
+      <path d="M4 12H8" />
+      <path d="M16 12H20" />
+    </svg>
+  );
+}
 
 const ITEMS = [
   { to: "/", label: "الرئيسية", icon: Home },
   { to: "/quran", label: "القرآن", icon: BookOpen },
-  { to: "/athkar", label: "الأذكار", icon: Sparkle },
-  { to: "/fasting", label: "الصيام", icon: Sun },
+  { to: "/athkar", label: "الأذكار", icon: Sparkles },
+  { to: "/prayer", label: "الصلاة", icon: MoonStar },
   { to: "/calendar", label: "التقويم", icon: CalendarDays },
 ] as const;
 
@@ -15,7 +40,7 @@ export function BottomNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-card/85 backdrop-blur-xl">
+    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-card/85 backdrop-blur-xl glass-panel">
       <ul className="mx-auto flex max-w-xl items-stretch justify-between px-2 pb-[env(safe-area-inset-bottom)]">
         {ITEMS.map((item) => {
           const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
@@ -26,14 +51,14 @@ export function BottomNav() {
                 to={item.to}
                 onClick={() => haptic("light")}
                 className={cn(
-                  "press flex flex-col items-center gap-1 rounded-2xl px-2 py-2.5 text-[11px] font-medium",
+                  "press flex flex-col items-center gap-1 rounded-2xl px-2 py-2.5 text-[11px] font-medium transition-all duration-300",
                   active ? "text-primary" : "text-muted-foreground",
                 )}
               >
                 <span
                   className={cn(
-                    "flex size-9 items-center justify-center rounded-xl transition-colors",
-                    active && "gradient-gold text-gold-foreground shadow-[var(--shadow-soft)]",
+                    "flex size-9 items-center justify-center rounded-xl transition-all duration-300",
+                    active && "gradient-gold text-gold-foreground shadow-[var(--shadow-glow)]",
                   )}
                 >
                   <Icon className="size-[18px]" />

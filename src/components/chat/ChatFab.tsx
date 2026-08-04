@@ -311,9 +311,11 @@ export function ChatFab() {
               </form>
               
               {/* Footer hint */}
-              <p className="mt-2 text-center text-[10px] text-muted-foreground/70">
-                powered by Islamic AI • Always verify with scholars
-              </p>
+              <div className="mt-3 rounded-xl border border-[var(--gold)]/20 bg-[var(--gold)]/10 p-3">
+                <p className="text-center text-[11px] leading-relaxed text-muted-foreground">
+                  ⚠️ تنبيه مهم: هذه الإجابات مُخصصة لأغراض تعليمية ولا تغني عن استفتاء أهل العلم المختصين. يُرجى دائمًا التحقق من المعلومات الشرعية من المصادر الموثوقة.
+                </p>
+              </div>
             </div>
           </div>
         </div>

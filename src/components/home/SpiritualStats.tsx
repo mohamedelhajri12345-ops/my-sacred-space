@@ -19,7 +19,7 @@ export function SpiritualStats() {
       {items.map((item) => {
         const Icon = item.icon;
         return (
-          <div key={item.label} className="surface-card flex flex-col items-center gap-1 px-2 py-3">
+          <div key={item.label} className="surface-card flex flex-col items-center gap-1 px-2 py-3 transition-all duration-300 hover:shadow-md" style={{ borderRadius: '16px' }}>
             <Icon className="size-4 text-accent" />
             <span className="text-lg font-bold">{item.value}</span>
             <span className="text-[10px] text-muted-foreground">{item.label}</span>
