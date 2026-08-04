@@ -55,6 +55,16 @@ export default defineConfig({
               },
             },
             {
+              // الأذان والتسجيلات الصوتية المحلية — cache-first ليعمل بدون إنترنت
+              urlPattern: ({ url, sameOrigin }) => sameOrigin && url.pathname.startsWith("/audio/"),
+              handler: "CacheFirst",
+              options: {
+                cacheName: "adhan-audio",
+                expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 },
+                cacheableResponse: { statuses: [0, 200] },
+              },
+            },
+            {
               urlPattern: ({ url }) => url.origin === "https://fonts.gstatic.com" || url.origin === "https://fonts.googleapis.com",
               handler: "CacheFirst",
               options: { cacheName: "google-fonts", expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 * 365 } },
