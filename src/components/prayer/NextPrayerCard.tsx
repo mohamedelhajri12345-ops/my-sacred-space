@@ -44,7 +44,7 @@ export function NextPrayerCard() {
   // حالة النجاح - عرض بيانات الصلاة
   return (
     <Link to="/prayer" className="press animate-rise block">
-      <div className="gradient-night relative overflow-hidden rounded-3xl p-5 text-cream shadow-[var(--shadow-soft)]">
+      <div className="gradient-night relative overflow-hidden rounded-3xl p-5 text-cream shadow-[var(--shadow-soft)]" style={{ borderRadius: '16px' }}>
         <div className="absolute -left-8 -top-10 size-36 rounded-full bg-gold/20 blur-2xl" />
         <div className="relative">
           <div className="flex items-center justify-between text-xs opacity-80">
@@ -55,10 +55,10 @@ export function NextPrayerCard() {
           </div>
           <p className="mt-4 text-sm opacity-85">الصلاة القادمة</p>
           <div className="mt-1 flex items-end justify-between">
-            <h2 className="text-4xl font-bold text-gradient-gold">{next?.label ?? "..."}</h2>
+            <h2 className="text-4xl font-bold text-gradient-gold" style={{ fontFamily: 'Amiri, serif' }}>{next?.label ?? "..."}</h2>
             <span className="text-lg font-semibold">{next?.date ? formatTime(next.date) : "--:--"}</span>
           </div>
-          <p dir="ltr" className="mt-3 text-center font-mono text-3xl tracking-widest">
+          <p className="mt-3 text-center font-mono text-3xl tracking-widest">
             {formatCountdown(remaining)}
           </p>
           {inKhushuWindow && (

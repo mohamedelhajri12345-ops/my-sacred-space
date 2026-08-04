@@ -20,16 +20,16 @@ export function AppShell({
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   return (
-    <div className="relative min-h-screen pb-28">
+    <div className="relative min-h-screen pb-28" dir="rtl">
       {settings.animatedBackground ? (
         <AnimatedBackground />
       ) : (
         <div aria-hidden className="pattern-geo pointer-events-none fixed inset-0 -z-10 opacity-[0.35]" />
       )}
-      <header className="sticky top-0 z-30 border-b border-border/60 bg-background/80 backdrop-blur-xl">
+      <header className="sticky top-0 z-30 border-b border-border/60 bg-background/80 backdrop-blur-xl" style={{ boxShadow: '0 4px 20px rgba(27, 42, 74, 0.08)' }}>
         <div className="mx-auto flex max-w-xl items-center justify-between gap-3 px-4 py-3">
           <div className="min-w-0">
-            <h1 className="truncate text-lg font-bold leading-tight">{title ?? "نور"}</h1>
+            <h1 className="truncate text-lg font-bold leading-tight" style={{ fontFamily: 'Amiri, serif' }}>{title ?? "أحلام الروح"}</h1>
             <p className="truncate text-xs text-muted-foreground">{subtitle ?? formatHijri(new Date())}</p>
           </div>
           <div className="flex items-center gap-1.5">
@@ -44,7 +44,8 @@ export function AppShell({
                 haptic("light");
                 updateSettings({ theme: settings.theme === "dark" ? "light" : "dark" });
               }}
-              className="press flex size-9 items-center justify-center rounded-xl border border-border bg-card text-foreground"
+              className="press flex size-9 items-center justify-center rounded-xl border border-border bg-card text-foreground transition-all duration-300 hover:shadow-md"
+              style={{ boxShadow: '0 2px 10px rgba(212, 165, 116, 0.15)' }}
             >
               {settings.theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
             </button>
@@ -52,7 +53,8 @@ export function AppShell({
               to="/settings"
               aria-label="الإعدادات"
               onClick={() => haptic("light")}
-              className="press flex size-9 items-center justify-center rounded-xl border border-border bg-card text-foreground"
+              className="press flex size-9 items-center justify-center rounded-xl border border-border bg-card text-foreground transition-all duration-300 hover:shadow-md"
+              style={{ boxShadow: '0 2px 10px rgba(212, 165, 116, 0.15)' }}
             >
               <Settings2 className="size-4" />
             </Link>

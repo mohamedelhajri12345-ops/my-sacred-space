@@ -84,6 +84,34 @@ function FloatingDots({ className }: { className?: string }) {
   );
 }
 
+// Floating blur circles for warm, cozy background
+function FloatingBlurCircle({ 
+  className, 
+  color, 
+  size = "large" 
+}: { 
+  className?: string; 
+  color: string; 
+  size?: "small" | "medium" | "large";
+}) {
+  const sizes = {
+    small: "w-48 h-48",
+    medium: "w-72 h-72",
+    large: "w-96 h-96"
+  };
+  
+  return (
+    <div 
+      className={`absolute rounded-full animate-float ${sizes[size]} ${className}`}
+      style={{ 
+        background: `radial-gradient(circle, ${color} 0%, transparent 70%)`,
+        filter: 'blur(80px)',
+        opacity: 0.2,
+      }}
+    />
+  );
+}
+
 const SHAPES = [
   { Comp: StarPlate, cls: "left-[-14%] top-[6%] size-64 text-[var(--gold)] animate-drift-slow" },
   { Comp: EightPointStar, cls: "right-[-10%] top-[26%] size-52 text-primary animate-drift-slower" },
@@ -97,7 +125,8 @@ const SHAPES = [
 export function AnimatedBackground() {
   return (
     <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-      <div className="absolute inset-0 bg-background" />
+      {/* Background gradient - أزرق داكن مريح للعين */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[#1B2A4A] to-[#2C3E6B]" />
       
       {/* Islamic geometric border pattern at top */}
       <div className="absolute inset-x-0 top-0 h-2 overflow-hidden opacity-20">
@@ -112,33 +141,62 @@ export function AnimatedBackground() {
         </div>
       </div>
       
+      {/* Floating blur circles - warm, cozy background */}
+      <FloatingBlurCircle 
+        color="#D4A574" 
+        size="large" 
+        className="left-[-20%] top-[-10%] [animation-delay:0s]" 
+      />
+      <FloatingBlurCircle 
+        color="#7A8B69" 
+        size="medium" 
+        className="right-[-15%] top-[20%] [animation-delay:-8s]" 
+      />
+      <FloatingBlurCircle 
+        color="#C4795B" 
+        size="small" 
+        className="left-[10%] bottom-[15%] [animation-delay:-15s]" 
+      />
+      <FloatingBlurCircle 
+        color="#D4A574" 
+        size="medium" 
+        className="right-[20%] bottom-[25%] [animation-delay:-5s]" 
+      />
+      <FloatingBlurCircle 
+        color="#7A8B69" 
+        size="small" 
+        className="left-[50%] top-[50%] [animation-delay:-12s]" 
+      />
+      
       {/* هالات ضوئية ناعمة - Spiritual glows */}
-      <div className="animate-glow-float absolute -top-24 right-[-15%] size-[26rem] rounded-full bg-[color-mix(in_oklab,var(--gold)_28%,transparent)] blur-3xl opacity-40" />
-      <div className="animate-glow-float absolute bottom-[-18%] left-[-18%] size-[30rem] rounded-full bg-[color-mix(in_oklab,var(--primary)_26%,transparent)] blur-3xl opacity-45 [animation-delay:-11s]" />
+      <div className="animate-glow-float absolute -top-24 right-[-15%] size-[26rem] rounded-full bg-[color-mix(in_oklab,var(--gold)_28%,transparent)] blur-3xl opacity-30" />
+      <div className="animate-glow-float absolute bottom-[-18%] left-[-18%] size-[30rem] rounded-full bg-[color-mix(in_oklab,var(--primary)_26%,transparent)] blur-3xl opacity-35 [animation-delay:-11s]" />
       
       {/* Additional spiritual glow */}
-      <div className="animate-glow-float absolute top-[40%] left-[60%] size-[18rem] rounded-full bg-[color-mix(in_oklab,var(--primary)_20%,transparent)] blur-3xl opacity-30 [animation-delay:-5s]" />
+      <div className="animate-glow-float absolute top-[40%] left-[60%] size-[18rem] rounded-full bg-[color-mix(in_oklab,var(--gold)_20%,transparent)] blur-3xl opacity-25 [animation-delay:-5s]" />
       
       {/* أشكال هندسية إسلامية */}
-      <div className="absolute inset-0 opacity-[0.22] dark:opacity-[0.24]">
+      <div className="absolute inset-0 opacity-[0.18] dark:opacity-[0.20]">
         {SHAPES.map(({ Comp, cls }, i) => (
           <Comp key={i} className={`absolute ${cls}`} />
         ))}
       </div>
       
       {/* زخرفة نقطية إسلامية */}
-      <div className="pattern-geo absolute inset-0 opacity-[0.28]" />
+      <div className="pattern-geo absolute inset-0 opacity-[0.15]" />
       
       {/* Floating particles */}
       <div className="absolute inset-0">
-        <div className="animate-[float_15s_ease-in-out_infinite] absolute left-[20%] top-[30%] size-1 rounded-full bg-[var(--gold)] opacity-30 [animation-delay:-3s]" />
-        <div className="animate-[float_20s_ease-in-out_infinite] absolute right-[25%] top-[50%] size-1.5 rounded-full bg-[var(--primary)] opacity-25 [animation-delay:-7s]" />
-        <div className="animate-[float_18s_ease-in-out_infinite] absolute left-[40%] bottom-[30%] size-1 rounded-full bg-[var(--gold)] opacity-35 [animation-delay:-10s]" />
-        <div className="animate-[float_22s_ease-in-out_infinite] absolute right-[35%] bottom-[20%] size-1.5 rounded-full bg-[var(--primary)] opacity-20 [animation-delay:-2s]" />
+        <div className="animate-[float_15s_ease-in-out_infinite] absolute left-[20%] top-[30%] size-1 rounded-full bg-[var(--gold)] opacity-25 [animation-delay:-3s]" />
+        <div className="animate-[float_20s_ease-in-out_infinite] absolute right-[25%] top-[50%] size-1.5 rounded-full bg-[var(--gold)] opacity-20 [animation-delay:-7s]" />
+        <div className="animate-[float_18s_ease-in-out_infinite] absolute left-[40%] bottom-[30%] size-1 rounded-full bg-[var(--gold)] opacity-30 [animation-delay:-10s]" />
+        <div className="animate-[float_22s_ease-in-out_infinite] absolute right-[35%] bottom-[20%] size-1.5 rounded-full bg-[var(--gold)] opacity-15 [animation-delay:-2s]" />
+        <div className="animate-[float_25s_ease-in-out_infinite] absolute left-[60%] top-[70%] size-1 rounded-full bg-[var(--gold)] opacity-20 [animation-delay:-18s]" />
+        <div className="animate-[float_28s_ease-in-out_infinite] absolute right-[10%] top-[80%] size-1.5 rounded-full bg-[var(--gold)] opacity-15 [animation-delay:-12s]" />
       </div>
       
-      {/* طبقة زجاجية توحّد المشهد */}
-      <div className="absolute inset-0 bg-background/35 backdrop-blur-[10px]" />
+      {/* طبقة زجاجية خفيفة توحّد المشهد */}
+      <div className="absolute inset-0 bg-background/25 backdrop-blur-[8px]" />
     </div>
   );
 }

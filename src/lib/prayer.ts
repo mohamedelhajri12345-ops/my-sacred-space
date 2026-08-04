@@ -273,7 +273,10 @@ export function formatTime(date: Date) {
   if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
     return "--:--";
   }
-  return new Intl.DateTimeFormat("ar", { hour: "2-digit", minute: "2-digit" }).format(date);
+  // استخدام تنسيق 24 ساعة لتجنب مشاكل AM/PM
+  const hours = date.getHours().toString().padStart(2, "0");
+  const minutes = date.getMinutes().toString().padStart(2, "0");
+  return `${hours}:${minutes}`;
 }
 
 export function formatCountdown(ms: number) {
