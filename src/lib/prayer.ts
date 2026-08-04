@@ -182,7 +182,13 @@ function getDefaultTimings(): PrayerEntry[] {
 }
 
 /**
- * الحصول على الصلاة القادمة مع معالجة أخطاء
+ * الحصول على الصلاة القادمة مع معالجة أخطاء محسنة
+ * @param coords الإحداثيات الجغرافية
+ * @param method طريقة حساب المواقيت
+ * @param now الوقت الحالي (افتراضي: الآن)
+ * @param adjustments تعديلات الصلاة
+ * @param enabledPrayers الصلوات المفعلة
+ * @returns الصلاة القادمة أو null
  */
 export function getNextPrayer(
   coords: Coords,
@@ -197,21 +203,39 @@ export function getNextPrayer(
       coords = DEFAULT_COORDS;
     }
 
-    const today = getDayTimings(coords, method, now, adjustments)
-      .filter((p) => p.key !== "sunrise") // استثناء الشروق من الصلاة المفروضة
+    // الحصول على مواقيت اليوم
+    let todayTimings = getDayTimings(coords, method, now, adjustments);
+    
+    // استثناء الشروق والصلوات المعطلة
+    todayTimings = todayTimings
+      .filter((p) => p.key !== "sunrise")
       .filter((p) => enabledPrayers ? enabledPrayers[p.key] !== false : true);
     
     // التحقق من أن المصفوفة ليست فارغة
-    if (today.length === 0) {
-      console.warn("لا توجد صلوات متاحة");
+    if (todayTimings.length === 0) {
+      console.warn("لا توجد صلوات متاحة اليوم");
       return null;
     }
     
-    const upcoming = today.find((p) => p.date && p.date.getTime() > now.getTime());
-    if (upcoming) return upcoming;
+    // البحث عن الصلاة القادمة (الأولى التي وقتها أكبر من الوقت الحالي)
+    const currentTime = now.getTime();
+    const upcoming = todayTimings.find((p) => {
+      if (!p.date || !(p.date instanceof Date) || isNaN(p.date.getTime())) {
+        return false;
+      }
+      return p.date.getTime() > currentTime;
+    });
     
+    if (upcoming) {
+      return upcoming;
+    }
+    
+    // إذا لم نجد صلاة قادمة اليوم، ننتقل للغد
     const tomorrow = new Date(now.getTime() + 86400000);
+    tomorrow.setHours(0, 0, 0, 0); // بداية يوم الغد
+    
     const tomorrowTimings = getDayTimings(coords, method, tomorrow, adjustments)
+      .filter((p) => p.key !== "sunrise")
       .filter((p) => enabledPrayers ? enabledPrayers[p.key] !== false : true);
     
     if (tomorrowTimings.length === 0) {
@@ -219,6 +243,7 @@ export function getNextPrayer(
       return null;
     }
     
+    // إرجاع أول صلاة في الغد
     return tomorrowTimings[0] ?? null;
   } catch (error) {
     console.error("خطأ في getNextPrayer:", error);
@@ -269,11 +294,43 @@ export function qiblaDirection(coords: Coords) {
   }
 }
 
-export function formatTime(date: Date) {
+/**
+ * تنسيق الوقت بتنسيق 12 ساعة مع AM/PM
+ * @param date الوقت المراد تنسيقه
+ * @returns الوقت منسقاً بتنسيق 12 ساعة (مثال: 09:33 م)
+ */
+export function formatTime(date: Date): string {
   if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
     return "--:--";
   }
-  return new Intl.DateTimeFormat("ar", { hour: "2-digit", minute: "2-digit" }).format(date);
+  
+  // استخدام تنسيق 12 ساعة مع مؤشر AM/PM
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+  const isPM = hours >= 12;
+  const displayHours = hours % 12 || 12; // تحويل 0 إلى 12
+  
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const period = isPM ? "م" : "ص"; // م = مساءً، ص = صباحاً
+  
+  return `${pad(displayHours)}:${pad(minutes)} ${period}`;
+}
+
+/**
+ * تنسيق الوقت بتنسيق 24 ساعة
+ * @param date الوقت المراد تنسيقه
+ * @returns الوقت منسقاً بتنسيق 24 ساعة (مثال: 21:33)
+ */
+export function formatTime24(date: Date): string {
+  if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+    return "--:--";
+  }
+  
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  
+  return `${pad(hours)}:${pad(minutes)}`;
 }
 
 export function formatCountdown(ms: number) {

@@ -41,6 +41,9 @@ export function NextPrayerCard() {
     );
   }
 
+  // تنسيق الوقت للعرض
+  const formattedTime = next?.date ? formatTime(next.date) : "--:--";
+
   // حالة النجاح - عرض بيانات الصلاة
   return (
     <Link to="/prayer" className="press animate-rise block">
@@ -56,9 +59,12 @@ export function NextPrayerCard() {
           <p className="mt-4 text-sm opacity-85">الصلاة القادمة</p>
           <div className="mt-1 flex items-end justify-between">
             <h2 className="text-4xl font-bold text-gradient-gold">{next?.label ?? "..."}</h2>
-            <span className="text-lg font-semibold">{next?.date ? formatTime(next.date) : "--:--"}</span>
+            <div className="text-left">
+              <span className="text-lg font-semibold block">{formattedTime.split(' ')[0]}</span>
+              <span className="text-xs opacity-75">{formattedTime.split(' ')[1]}</span>
+            </div>
           </div>
-          <p dir="ltr" className="mt-3 text-center font-mono text-3xl tracking-widest">
+          <p className="mt-3 text-center font-mono text-3xl tracking-widest">
             {formatCountdown(remaining)}
           </p>
           {inKhushuWindow && (
