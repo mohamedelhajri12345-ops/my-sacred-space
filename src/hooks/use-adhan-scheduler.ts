@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useApp } from "@/lib/app-context";
-import { getDayTimings, getLastThird, getNextPrayer, type PrayerEntry } from "@/lib/prayer";
+import { getDayTimings, getLastThird, getNextPrayer, type PrayerEntry, OBLIGATORY_PRAYERS } from "@/lib/prayer";
 import { playAlertSound, showLocalNotification } from "@/lib/notifications";
 import { gregorianToHijri } from "@/lib/hijri";
 import { haptic } from "@/lib/haptics";
@@ -25,14 +25,27 @@ export function useAdhanScheduler() {
     return () => window.clearInterval(id);
   }, []);
 
-  const next: PrayerEntry = getNextPrayer(coords, settings.method, now);
-  const timings = getDayTimings(coords, settings.method, now);
+  const next: PrayerEntry = getNextPrayer(
+    coords, 
+    settings.method, 
+    now, 
+    settings.prayerAdjustments,
+    settings.enabledPrayers
+  );
+  const timings = getDayTimings(
+    coords, 
+    settings.method, 
+    now, 
+    settings.prayerAdjustments
+  );
 
   // وضع الخشوع: نافذة هدوء بعد دخول كل صلاة.
   const inKhushuWindow =
     settings.khushuMode &&
     timings.some((p) => {
       if (p.key === "sunrise") return false;
+      // التحقق من تفعيل الصلاة
+      if (settings.enabledPrayers[p.key] === false) return false;
       const diff = now.getTime() - p.date.getTime();
       return diff >= 0 && diff < settings.khushuMinutes * 60000;
     });
@@ -51,6 +64,8 @@ export function useAdhanScheduler() {
     };
 
     for (const p of timings) {
+      // تخطي الصلوات المعطلة
+      if (settings.enabledPrayers[p.key] === false) continue;
       if (p.key === "sunrise") continue;
       const t = p.date.getTime();
 
@@ -126,7 +141,16 @@ export function useAdhanScheduler() {
     settings.qiyamReminder,
     settings.fastingReminder,
     settings.alertKind,
+    settings.enabledPrayers,
+    settings.prayerAdjustments,
   ]);
 
-  return { now, next, timings, inKhushuWindow, remaining: next.date.getTime() - now.getTime() };
+  return { 
+    now, 
+    next, 
+    timings, 
+    inKhushuWindow, 
+    remaining: next.date.getTime() - now.getTime(),
+    enabledPrayers: settings.enabledPrayers,
+  };
 }

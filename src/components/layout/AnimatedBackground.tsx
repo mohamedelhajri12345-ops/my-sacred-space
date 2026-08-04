@@ -1,5 +1,5 @@
 /**
- * خلفية روحانية متحركة: أشكال إسلامية هندسية (نجمة ثمانية، طبق نجمي، هلال)
+ * خلفية روحانية متحركة: أشكال إسلامية هندسية (نجمة ثمانية، طبق نجمي، هلال، زخرفة)
  * تسبح ببطء شديد خلف الزجاج، بشفافية منخفضة حتى لا تشتّت القارئ.
  */
 function EightPointStar({ className }: { className?: string }) {
@@ -43,28 +43,100 @@ function Crescent({ className }: { className?: string }) {
   );
 }
 
+// New Islamic Pattern Component
+function IslamicPattern({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 100 100" className={className} aria-hidden>
+      <g fill="none" stroke="currentColor" strokeWidth="0.8">
+        {/* Main octagon */}
+        <polygon points="50,5 80,20 95,50 80,80 50,95 20,80 5,50 20,20" />
+        {/* Inner details */}
+        <circle cx="50" cy="50" r="25" />
+        <circle cx="50" cy="50" r="15" />
+        {/* Radiating lines */}
+        <line x1="50" y1="5" x2="50" y2="25" />
+        <line x1="50" y1="75" x2="50" y2="95" />
+        <line x1="5" y1="50" x2="25" y2="50" />
+        <line x1="75" y1="50" x2="95" y2="50" />
+        {/* Diagonal lines */}
+        <line x1="20" y1="20" x2="35" y2="35" />
+        <line x1="65" y1="65" x2="80" y2="80" />
+        <line x1="80" y1="20" x2="65" y2="35" />
+        <line x1="35" y1="65" x2="20" y2="80" />
+      </g>
+    </svg>
+  );
+}
+
+// Small decorative dots
+function FloatingDots({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 100 100" className={className} aria-hidden>
+      <circle cx="20" cy="20" r="3" fill="currentColor" opacity="0.3" />
+      <circle cx="50" cy="15" r="2" fill="currentColor" opacity="0.4" />
+      <circle cx="80" cy="30" r="2.5" fill="currentColor" opacity="0.35" />
+      <circle cx="15" cy="60" r="2" fill="currentColor" opacity="0.4" />
+      <circle cx="70" cy="70" r="3" fill="currentColor" opacity="0.3" />
+      <circle cx="85" cy="85" r="2" fill="currentColor" opacity="0.35" />
+      <circle cx="40" cy="80" r="2.5" fill="currentColor" opacity="0.4" />
+      <circle cx="60" cy="40" r="2" fill="currentColor" opacity="0.35" />
+    </svg>
+  );
+}
+
 const SHAPES = [
   { Comp: StarPlate, cls: "left-[-14%] top-[6%] size-64 text-[var(--gold)] animate-drift-slow" },
   { Comp: EightPointStar, cls: "right-[-10%] top-[26%] size-52 text-primary animate-drift-slower" },
   { Comp: Crescent, cls: "left-[8%] top-[58%] size-40 text-[var(--gold)] animate-drift-slow [animation-delay:-9s]" },
   { Comp: EightPointStar, cls: "right-[12%] bottom-[4%] size-44 text-[var(--gold)] animate-drift-slower [animation-delay:-14s]" },
   { Comp: StarPlate, cls: "left-[38%] top-[38%] size-72 text-primary animate-spin-very-slow" },
+  { Comp: IslamicPattern, cls: "left-[55%] bottom-[10%] size-56 text-[var(--gold)] animate-drift-slow [animation-delay:-6s]" },
+  { Comp: FloatingDots, cls: "right-[5%] top-[15%] size-32 text-primary/30 animate-drift-slower [animation-delay:-8s]" },
 ] as const;
 
 export function AnimatedBackground() {
   return (
     <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
       <div className="absolute inset-0 bg-background" />
-      {/* هالات ضوئية ناعمة */}
+      
+      {/* Islamic geometric border pattern at top */}
+      <div className="absolute inset-x-0 top-0 h-2 overflow-hidden opacity-20">
+        <div className="flex h-full animate-[slide_20s_linear_infinite]">
+          {[...Array(20)].map((_, i) => (
+            <svg key={i} viewBox="0 0 60 20" className="h-full w-8 flex-shrink-0 text-[var(--gold)]">
+              <path d="M0,10 L15,0 L30,10 L45,0 L60,10" fill="none" stroke="currentColor" strokeWidth="1" />
+              <circle cx="15" cy="5" r="2" fill="currentColor" />
+              <circle cx="45" cy="5" r="2" fill="currentColor" />
+            </svg>
+          ))}
+        </div>
+      </div>
+      
+      {/* هالات ضوئية ناعمة - Spiritual glows */}
       <div className="animate-glow-float absolute -top-24 right-[-15%] size-[26rem] rounded-full bg-[color-mix(in_oklab,var(--gold)_28%,transparent)] blur-3xl opacity-40" />
       <div className="animate-glow-float absolute bottom-[-18%] left-[-18%] size-[30rem] rounded-full bg-[color-mix(in_oklab,var(--primary)_26%,transparent)] blur-3xl opacity-45 [animation-delay:-11s]" />
-      {/* أشكال هندسية */}
+      
+      {/* Additional spiritual glow */}
+      <div className="animate-glow-float absolute top-[40%] left-[60%] size-[18rem] rounded-full bg-[color-mix(in_oklab,var(--primary)_20%,transparent)] blur-3xl opacity-30 [animation-delay:-5s]" />
+      
+      {/* أشكال هندسية إسلامية */}
       <div className="absolute inset-0 opacity-[0.22] dark:opacity-[0.24]">
         {SHAPES.map(({ Comp, cls }, i) => (
           <Comp key={i} className={`absolute ${cls}`} />
         ))}
       </div>
+      
+      {/* زخرفة نقطية إسلامية */}
       <div className="pattern-geo absolute inset-0 opacity-[0.28]" />
+      
+      {/* Floating particles */}
+      <div className="absolute inset-0">
+        <div className="animate-[float_15s_ease-in-out_infinite] absolute left-[20%] top-[30%] size-1 rounded-full bg-[var(--gold)] opacity-30 [animation-delay:-3s]" />
+        <div className="animate-[float_20s_ease-in-out_infinite] absolute right-[25%] top-[50%] size-1.5 rounded-full bg-[var(--primary)] opacity-25 [animation-delay:-7s]" />
+        <div className="animate-[float_18s_ease-in-out_infinite] absolute left-[40%] bottom-[30%] size-1 rounded-full bg-[var(--gold)] opacity-35 [animation-delay:-10s]" />
+        <div className="animate-[float_22s_ease-in-out_infinite] absolute right-[35%] bottom-[20%] size-1.5 rounded-full bg-[var(--primary)] opacity-20 [animation-delay:-2s]" />
+      </div>
+      
       {/* طبقة زجاجية توحّد المشهد */}
       <div className="absolute inset-0 bg-background/35 backdrop-blur-[10px]" />
     </div>

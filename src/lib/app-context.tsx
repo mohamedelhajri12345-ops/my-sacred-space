@@ -1,9 +1,12 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useLocalStorage } from "./use-local-storage";
-import { DEFAULT_COORDS, type Coords, type MethodKey } from "./prayer";
+import { DEFAULT_COORDS, type Coords, type MethodKey, type PrayerKey } from "./prayer";
 import { methodForCountry, reverseGeocode, type PlaceInfo } from "./geo";
 
 export type AlertKind = "silent" | "beep" | "adhan";
+
+/** تعديلات مواقيت الصلاة بالدقائق (سالب للتقديم، موجب للتأخير) */
+export type PrayerAdjustments = Partial<Record<PrayerKey, number>>;
 
 export type Settings = {
   theme: "light" | "dark";
@@ -22,6 +25,12 @@ export type Settings = {
   fontScale: number;
   showTranslation: boolean;
   animatedBackground: boolean;
+  /** تفعيل/إيقاف كل صلاة على حدة */
+  enabledPrayers: Record<PrayerKey, boolean>;
+  /** تعديلات مخصصة لكل صلاة بالدقائق */
+  prayerAdjustments: PrayerAdjustments;
+  /** تفعيل التوقيت الصيفي تلقائيًا */
+  autoDst: boolean;
 };
 
 const DEFAULT_SETTINGS: Settings = {
@@ -41,6 +50,16 @@ const DEFAULT_SETTINGS: Settings = {
   fontScale: 1,
   showTranslation: false,
   animatedBackground: true,
+  enabledPrayers: {
+    fajr: true,
+    sunrise: true,
+    dhuhr: true,
+    asr: true,
+    maghrib: true,
+    isha: true,
+  },
+  prayerAdjustments: {},
+  autoDst: true,
 };
 
 export type Streak = { count: number; lastDay: string; totalSessions: number };
@@ -57,6 +76,10 @@ type AppContextValue = {
   streak: Streak;
   markThikrSession: () => void;
   online: boolean;
+  /** تعديل وقت صلاة واحدة */
+  adjustPrayer: (key: PrayerKey, minutes: number) => void;
+  /** إعادة تعيين التعديلات للافتراضي */
+  resetPrayerAdjustments: () => void;
 };
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -102,9 +125,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const setCoords = useCallback((c: Coords) => setCoordsState(c), [setCoordsState]);
 
+  const adjustPrayer = useCallback((key: PrayerKey, minutes: number) => {
+    setSettings((prev) => ({
+      ...prev,
+      prayerAdjustments: {
+        ...prev.prayerAdjustments,
+        [key]: minutes,
+      },
+    }));
+  }, [setSettings]);
+
+  const resetPrayerAdjustments = useCallback(() => {
+    setSettings((prev) => ({
+      ...prev,
+      prayerAdjustments: {},
+    }));
+  }, [setSettings]);
+
   const requestLocation = useCallback(async () => {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
-      setLocationError("جهازك لا يدعم تحديد الموقع، يمكنك اختيار المدينة يدويًا");
+      setLocationError("جهازك لا يدعم تحديد الموقع، يمكنك اختيار المدينة يدويًا من الإعدادات");
       return;
     }
     setLocating(true);
@@ -163,8 +203,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       streak,
       markThikrSession,
       online,
+      adjustPrayer,
+      resetPrayerAdjustments,
     }),
-    [settings, updateSettings, coords, setCoords, place, locating, locationError, requestLocation, streak, markThikrSession, online],
+    [settings, updateSettings, coords, setCoords, place, locating, locationError, requestLocation, streak, markThikrSession, online, adjustPrayer, resetPrayerAdjustments],
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

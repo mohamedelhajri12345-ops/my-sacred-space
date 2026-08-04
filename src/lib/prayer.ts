@@ -1,4 +1,5 @@
 import { CalculationMethod, Coordinates, PrayerTimes, Qibla, SunnahTimes } from "adhan";
+import type { PrayerAdjustments } from "./app-context";
 
 export type MethodKey =
   | "MuslimWorldLeague"
@@ -27,6 +28,8 @@ export const METHODS: { key: MethodKey; label: string }[] = [
 
 export type PrayerKey = "fajr" | "sunrise" | "dhuhr" | "asr" | "maghrib" | "isha";
 
+export const PRAYER_KEYS: PrayerKey[] = ["fajr", "sunrise", "dhuhr", "asr", "maghrib", "isha"];
+
 export const PRAYER_LABELS: Record<PrayerKey, string> = {
   fajr: "الفجر",
   sunrise: "الشروق",
@@ -36,6 +39,9 @@ export const PRAYER_LABELS: Record<PrayerKey, string> = {
   isha: "العشاء",
 };
 
+/** الصلاة المفروضة (بدون الشروق) */
+export const OBLIGATORY_PRAYERS: PrayerKey[] = ["fajr", "dhuhr", "asr", "maghrib", "isha"];
+
 export type Coords = { latitude: number; longitude: number; label?: string };
 
 export const DEFAULT_COORDS: Coords = {
@@ -44,29 +50,74 @@ export const DEFAULT_COORDS: Coords = {
   label: "مكة المكرمة",
 };
 
-export type PrayerEntry = { key: PrayerKey; label: string; date: Date };
+export type PrayerEntry = { key: PrayerKey; label: string; date: Date; adjusted?: boolean };
 
-export function getPrayerTimes(coords: Coords, method: MethodKey, date = new Date()) {
-  const c = new Coordinates(coords.latitude, coords.longitude);
-  const params = CalculationMethod[method]();
-  return new PrayerTimes(c, date, params);
+/**
+ * تطبيق تعديلات الصلاة على الوقت
+ * @param date الوقت الأصلي
+ * @param adjustment التعديل بالدقائق
+ */
+export function applyAdjustment(date: Date, adjustment: number | undefined): Date {
+  if (!adjustment || adjustment === 0) return date;
+  return new Date(date.getTime() + adjustment * 60 * 1000);
 }
 
-export function getDayTimings(coords: Coords, method: MethodKey, date = new Date()): PrayerEntry[] {
-  const t = getPrayerTimes(coords, method, date);
-  return (["fajr", "sunrise", "dhuhr", "asr", "maghrib", "isha"] as PrayerKey[]).map((key) => ({
+export function getPrayerTimes(
+  coords: Coords,
+  method: MethodKey,
+  date = new Date(),
+  adjustments?: PrayerAdjustments
+) {
+  const c = new Coordinates(coords.latitude, coords.longitude);
+  const params = CalculationMethod[method]();
+  const times = new PrayerTimes(c, date, params);
+  
+  // تطبيق التعديلات
+  for (const key of PRAYER_KEYS) {
+    const adjustment = adjustments?.[key];
+    if (adjustment && adjustment !== 0) {
+      const original = times[key].getTime();
+      times[key] = new Date(original + adjustment * 60 * 1000);
+    }
+  }
+  
+  return times;
+}
+
+export function getDayTimings(
+  coords: Coords,
+  method: MethodKey,
+  date = new Date(),
+  adjustments?: PrayerAdjustments
+): PrayerEntry[] {
+  const t = getPrayerTimes(coords, method, date, adjustments);
+  return PRAYER_KEYS.map((key) => ({
     key,
     label: PRAYER_LABELS[key],
     date: t[key],
+    adjusted: adjustments?.[key] !== undefined && adjustments?.[key] !== 0,
   }));
 }
 
-export function getNextPrayer(coords: Coords, method: MethodKey, now = new Date()): PrayerEntry {
-  const today = getDayTimings(coords, method, now).filter((p) => p.key !== "sunrise");
+export function getNextPrayer(
+  coords: Coords,
+  method: MethodKey,
+  now = new Date(),
+  adjustments?: PrayerAdjustments,
+  enabledPrayers?: Record<PrayerKey, boolean>
+): PrayerEntry {
+  const today = getDayTimings(coords, method, now, adjustments)
+    .filter((p) => p.key !== "sunrise") // استثناء الشروق من الصلاة المفروضة
+    .filter((p) => enabledPrayers ? enabledPrayers[p.key] !== false : true);
+  
   const upcoming = today.find((p) => p.date.getTime() > now.getTime());
   if (upcoming) return upcoming;
+  
   const tomorrow = new Date(now.getTime() + 86400000);
-  return getDayTimings(coords, method, tomorrow)[0]!;
+  const tomorrowTimings = getDayTimings(coords, method, tomorrow, adjustments)
+    .filter((p) => enabledPrayers ? enabledPrayers[p.key] !== false : true);
+  
+  return tomorrowTimings[0]!;
 }
 
 export function getLastThird(coords: Coords, method: MethodKey, date = new Date()) {
