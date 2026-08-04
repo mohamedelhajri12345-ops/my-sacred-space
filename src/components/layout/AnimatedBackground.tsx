@@ -57,16 +57,16 @@ export function AnimatedBackground() {
       <div className="absolute inset-0 bg-background" />
       {/* هالات ضوئية ناعمة */}
       <div className="animate-glow-float absolute -top-24 right-[-15%] size-[26rem] rounded-full bg-[color-mix(in_oklab,var(--gold)_28%,transparent)] blur-3xl opacity-40" />
-      <div className="animate-glow-float absolute bottom-[-18%] left-[-18%] size-[30rem] rounded-full bg-[color-mix(in_oklab,var(--primary)_26%,transparent)] blur-3xl opacity-35 [animation-delay:-11s]" />
+      <div className="animate-glow-float absolute bottom-[-18%] left-[-18%] size-[30rem] rounded-full bg-[color-mix(in_oklab,var(--primary)_26%,transparent)] blur-3xl opacity-45 [animation-delay:-11s]" />
       {/* أشكال هندسية */}
-      <div className="absolute inset-0 opacity-[0.13] dark:opacity-[0.16]">
+      <div className="absolute inset-0 opacity-[0.22] dark:opacity-[0.24]">
         {SHAPES.map(({ Comp, cls }, i) => (
           <Comp key={i} className={`absolute ${cls}`} />
         ))}
       </div>
       <div className="pattern-geo absolute inset-0 opacity-[0.28]" />
       {/* طبقة زجاجية توحّد المشهد */}
-      <div className="absolute inset-0 bg-background/55 backdrop-blur-2xl" />
+      <div className="absolute inset-0 bg-background/35 backdrop-blur-[10px]" />
     </div>
   );
 }
