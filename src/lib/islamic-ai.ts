@@ -576,62 +576,355 @@ const KNOWLEDGE_BASE: IslamicTopic[] = [
   }
 ];
 
-// دالة البحث في قاعدة المعرفة
-function searchKnowledgeBase(query: string): IslamicTopic | null {
-  const normalizedQuery = query.toLowerCase().trim();
+// ==========================================
+// نظام تنويع الردود
+// ==========================================
+
+// عبارات افتتاحية متنوعة
+const OPENING_PHRASES = [
+  "بارك الله فيك على سؤالك ",
+  "جزاك الله خيرًا على هذا السؤال ",
+  "سؤالك جميل ",
+  "أحسنت على هذا الاستفسار ",
+];
+
+// عبارات ختامية متنوعة
+const CLOSING_PHRASES = [
+  "نسأل الله أن يوفقك لكل خير.",
+  "اللهم اجعلنا من المستفيدين.",
+  "والله ولي التوفيق.",
+  "هذا والله أعلم، والله ولي التوفيق.",
+  "نسأل الله الفائدة لنا ولك.",
+];
+
+// عبارات تنبيه متنوعة
+const NOTIFICATION_PHRASES = [
+  "تنبيه: هذه الإجابات لأغراض تعليمية عامة ولا تغني عن استفتاء أهل العلم المختصين.",
+  "⚠️ ملاحظة مهمة: للفتاوى الشرعية الدقيقة، يُرجى الرجوع إلى أهل العلم الموثوقين في منطقتك.",
+  "⚠️ تنبيه: المعلومات المقدمة للأغراض التثقيفية فقط، ولا تُغني عن استشارة العلماء.",
+];
+
+/**
+ * اختيار عنصر عشوائي من مصفوفة
+ */
+function randomPick<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+/**
+ * إضافة تنويع على الإجابة
+ */
+function diversifyResponse(response: AIResponse): AIResponse {
+  const opening = randomPick(OPENING_PHRASES);
+  const closing = randomPick(CLOSING_PHRASES);
+  const notification = randomPick(NOTIFICATION_PHRASES);
   
-  for (const topic of KNOWLEDGE_BASE) {
-    for (const keyword of topic.keywords) {
-      if (normalizedQuery.includes(keyword) || keyword.includes(normalizedQuery)) {
-        return topic;
+  // إضافة عبارة افتتاحية في بداية الإجابة
+  let diversifiedAnswer = response.answer;
+  
+  // إضافة فاصل إذا كانت الإجابة لا تبدأ بـ "ال"
+  if (!response.answer.trim().startsWith("ال") && !response.answer.trim().startsWith("**")) {
+    diversifiedAnswer = opening + ":\n\n" + diversifiedAnswer;
+  }
+  
+  // إضافة عبارة ختامية
+  diversifiedAnswer += "\n\n" + closing;
+  
+  // إضافة تنويه مهم
+  diversifiedAnswer += "\n\n" + notification;
+  
+  return {
+    ...response,
+    answer: diversifiedAnswer,
+  };
+}
+
+// ==========================================
+// البحث المحسن في قاعدة المعرفة
+// ==========================================
+
+interface SearchResult {
+  topic: IslamicTopic;
+  score: number;
+}
+
+/**
+ * حساب درجة التطابق بين السؤال والكلمة المفتاحية
+ */
+function calculateMatchScore(query: string, keyword: string): number {
+  const normalizedQuery = query.toLowerCase().trim();
+  const normalizedKeyword = keyword.toLowerCase();
+  
+  // تطابق كامل
+  if (normalizedQuery === normalizedKeyword) return 100;
+  
+  // السؤال يحتوي الكلمة المفتاحية بالكامل
+  if (normalizedQuery.includes(normalizedKeyword)) {
+    return 80 + (normalizedKeyword.length / normalizedQuery.length) * 20;
+  }
+  
+  // الكلمة المفتاحية تحتوي السؤال
+  if (normalizedKeyword.includes(normalizedQuery)) {
+    return 60 + (normalizedQuery.length / normalizedKeyword.length) * 20;
+  }
+  
+  // تطابق جزئي - التحقق من الجذور
+  const queryWords = normalizedQuery.split(/\s+/);
+  const keywordWords = normalizedKeyword.split(/\s+/);
+  
+  let matches = 0;
+  for (const qWord of queryWords) {
+    for (const kWord of keywordWords) {
+      if (qWord === kWord || kWord.includes(qWord) || qWord.includes(kWord)) {
+        matches++;
       }
     }
   }
   
-  return null;
-}
-
-// دالة تحليل السؤال وتقديم الإجابة
-export function getIslamicAnswer(question: string): AIResponse {
-  const topic = searchKnowledgeBase(question);
-  
-  if (topic) {
-    return topic.response;
+  if (matches > 0) {
+    return (matches / Math.max(queryWords.length, keywordWords.length)) * 50;
   }
   
-  // إجابة عامة للأسئلة غير المصنفة
-  return {
-    answer: `سؤالك عن: "${question}"
+  return 0;
+}
 
-جزاك الله خيرًا على سؤالك. هذا الموضوع يحتاج إلى تفصيل أكثر، وأنصحك بالرجوع إلى:
+/**
+ * البحث المحسن في قاعدة المعرفة
+ */
+function searchKnowledgeBase(query: string): SearchResult | null {
+  const results: SearchResult[] = [];
+  
+  for (const topic of KNOWLEDGE_BASE) {
+    let maxScore = 0;
+    
+    for (const keyword of topic.keywords) {
+      const score = calculateMatchScore(query, keyword);
+      maxScore = Math.max(maxScore, score);
+    }
+    
+    if (maxScore > 30) {
+      results.push({ topic, score: maxScore });
+    }
+  }
+  
+  // ترتيب النتائج حسب الدرجة
+  results.sort((a, b) => b.score - a.score);
+  
+  return results[0] ?? null;
+}
 
-1. **القرآن الكريم** - source أساسي ومباشر
-2. **السنة النبوية** - الأحاديث الصحيحة
-3. **أهل العلم الموثوقين** - للفتوى في المسائل الشرعية
-4. **المواقع الإسلامية الموثوقة** - مثل islamqa.info
+// ==========================================
+// إجابات متنوعة إضافية
+// ==========================================
 
-⚠️ **تنبيه مهم:**
-أنا مساعد إسلامي يوفر معلومات عامة. للفتاوى الشرعية الدقيقة، يُرجى الرجوع إلى أهل العلم الموثوقين في منطقتك.
+const ADDITIONAL_RESPONSES: Record<string, AIResponse> = {
+  greeting: {
+    answer: `وعليكم السلام ورحمة الله وبركاته 🌙
 
-يمكنك أيضًا:
-- قراءة القرآن الكريم في التطبيق
-- تصفح الأذكار والأدعية
-- البحث في التفاسير المعتمدة`,
+أهلاً بك في مساعدك الإسلامي! يسعدني مساعدتك في فهم ديننا الحنيف.
+
+يمكنني مساعدتك في مواضيع متعددة مثل:
+• أسئلة عن العقيدة والإيمان
+• أحكام الصلاة والطهارة
+• الأذكار والأدعية النبوية
+• تفسير القرآن الكريم
+• فقه العبادات والمعاملات
+
+ما الذي تودّ معرفته اليوم؟`,
+    sources: [
+      { type: "quran", text: "وَإِذَا حُيِّيتُم بِتَحِيَّةٍ فَحَيُّوا بِأَحْسَنَ مِنْهَا أَوْ رُدُّوهَا", reference: "سورة النساء، الآية 86" },
+    ],
+    relatedTopics: ["الصلاة", "الأذكار", "الإيمان"],
+  },
+  thanks: {
+    answer: `جزاك الله خيرًا على كلماتك الطيبة 🤲
+
+نسأل الله أن يجعلنا من الشاكرين لنعمه، وأن يوفقنا لخدمتك وخدمة دينك.
+
+لا تتردد في العودة إلينا بأية أسئلة أخرى، نحن في خدمتك دائمًا.`,
+    sources: [
+      { type: "quran", text: "وَقُل رَّبِّ زِدْنِي عِلْمًا", reference: "سورة طه، الآية 114" },
+    ],
+    relatedTopics: ["الدعاء", "الذكر"],
+  },
+  sorry: {
+    answer: `لا تقلق، هذا جزء من التعلم! 🌸
+
+كل مسلم يمر بهذه المرحلة. المهم أن تسأل وتتعلم، فطلب العلم فريضة على كل مسلم.
+
+إليك بعض الاقتراحات:
+• ابدأ بتعلم أركان الإسلام
+• تعلم كيفية الوضوء والصلاة
+• احفظ أذكار الصباح والمساء
+• اقرأ قصص الأنبياء في القرآن
+
+ما الموضوع الذي يهمك أكثر؟`,
     sources: [
       { type: "quran", text: "فَاسْأَلُوا أَهْلَ الذِّكْرِ إِن كُنتُمْ لَا تَعْلَمُونَ", reference: "سورة النحل، الآية 43" },
-      { type: "scholar", text: "العلم شرط قبل الفتيا", reference: "حديث نبوي" },
-      { type: "scholar", text: "لأن يهدي الله بك رجلاً واحدًا خير لك من حمر النعم", reference: "متفق عليه" }
     ],
-    relatedTopics: ["القرآن", "السنة", "العلم", "الفتوى"]
+    relatedTopics: ["طلب العلم", "التعلم", "الإسلام"],
+  },
+  random: {
+    answer: `ما شاء الله، سؤال جميل! 🌟
+
+هذا الموضوع له أهمية خاصة في ديننا. دعني أوضح لك ما أعرفه:
+
+الإسلام دين يجمع بين العلم والعمل، وبين الروحانية والواقعية. كل ما في ديننا له حكمة بالغة.
+
+من المهم أن نتعلم ديننا من مصادره الصحيحة:
+• القرآن الكريم
+• السنة النبوية الصحيحة
+• أهل العلم الموثوقين
+
+هل تريد تفصيلًا أكثر في موضوع معين؟`,
+    sources: [
+      { type: "quran", text: "يَرْفَعِ اللَّهُ الَّذِينَ آمَنُوا مِنكُمْ وَالَّذِينَ أُوتُوا الْعِلْمَ دَرَجَاتٍ", reference: "سورة المجادلة، الآية 11" },
+    ],
+    relatedTopics: ["العلم", "الإسلام", "طلب العلم"],
+  },
+};
+
+// ==========================================
+// الدوال الرئيسية
+// ==========================================
+
+/**
+ * تحديد نوع السؤال
+ */
+function detectQuestionType(question: string): string {
+  const normalized = question.toLowerCase().trim();
+  
+  // التحيات
+  if (/^(السلام|سلام|أهلا|اهلا|مرحبا|مرحبا|كيف حالك|أخبارك)/.test(normalized)) {
+    return "greeting";
+  }
+  
+  // الشكر
+  if (/^(شكرا|جزاك|شكرًا|بارك|جزاك الله|جزاك الله خيرًا)/.test(normalized)) {
+    return "thanks";
+  }
+  
+  // الأسف
+  if (/^(معذرة|عذرا|آسف|اعذرني|اسف)/.test(normalized)) {
+    return "sorry";
+  }
+  
+  // أسئلة لا علاقة لها بالإسلام
+  const unrelatedKeywords = ["الطقس", "الطقس", "الأخبار", "السياسة", "رياضة", "كرة", "مباراة"];
+  for (const keyword of unrelatedKeywords) {
+    if (normalized.includes(keyword)) {
+      return "unrelated";
+    }
+  }
+  
+  return "religious";
+}
+
+// إجابة للأسئلة غير المتعلقة
+function getUnrelatedAnswer(question: string): AIResponse {
+  return {
+    answer: `أعتذر، هذا السؤال خارج نطاق مساعدتي الإسلامية 🌙
+
+أنا متخصص في الإجابة على الأسئلة الدينية والإسلامية فقط.
+
+يمكنني مساعدتك في مواضيع مثل:
+• أسئلة عن الصلاة والعبادات
+• أحكام الطهارة
+• الأذكار والأدعية
+• تفسير القرآن والسنة
+• العقيدة والإيمان
+
+هل لديك سؤال ديني يسعدني مساعدتك فيه؟`,
+    sources: [
+      { type: "scholar", text: "لكل مجتهد نصيب، ولكل سؤال إجابة", reference: "حكمة إسلامية" },
+    ],
+    relatedTopics: ["الصلاة", "الأذكار", "الإسلام"],
   };
 }
 
-// دالة تنسيق المصادر للعرض
+// إجابة افتراضية محسنة
+function getDefaultResponse(question: string): AIResponse {
+  return {
+    answer: `سؤالك: "${question}"
+
+جزاك الله خيرًا على اهتمامك 🌸
+
+هذا موضوع جميل يتطلب تفصيلًا أكثر. إليك بعض الإرشادات:
+
+📚 **للبدء في تعلم دينك:**
+1. اقرأ القرآن الكريم بتدبر
+2. تعلم أحكام الصلاة الأساسية
+3. احفظ أذكار الصباح والمساء
+4. استمع لدروس العلماء الموثوقين
+
+🔗 **مصادر موثوقة:**
+• القرآن الكريم وتفسيره
+• الأحاديث النبوية الصحيحة
+• المواقع الإسلامية المعتمدة
+
+💡 **نصيحتي:**
+لا تتردد في سؤال أهل العلم عن أي مسألة شرعية، فهم المرجع الأساسي للفتاوى.
+
+هل تريد أن أساعدك في موضوع محدد من هذه المواضيع؟`,
+    sources: [
+      { type: "quran", text: "فَاسْأَلُوا أَهْلَ الذِّكْرِ إِن كُنتُمْ لَا تَعْلَمُونَ", reference: "سورة النحل، الآية 43" },
+      { type: "hadith", text: "طلب العلم فريضة على كل مسلم", reference: "رواه ابن ماجه" },
+    ],
+    relatedTopics: ["القرآن", "السنة", "طلب العلم"],
+  };
+}
+
+/**
+ * دالة تحليل السؤال وتقديم الإجابة المحسنة
+ */
+export function getIslamicAnswer(question: string): AIResponse {
+  const normalizedQuestion = question.trim();
+  
+  // التحقق من نوع السؤال
+  const questionType = detectQuestionType(normalizedQuestion);
+  
+  // إجابة خاصة بالتحية
+  if (questionType === "greeting") {
+    return diversifyResponse(ADDITIONAL_RESPONSES.greeting);
+  }
+  
+  // إجابة خاصة بالشكر
+  if (questionType === "thanks") {
+    return diversifyResponse(ADDITIONAL_RESPONSES.thanks);
+  }
+  
+  // إجابة خاصة بالاعتذار
+  if (questionType === "sorry") {
+    return diversifyResponse(ADDITIONAL_RESPONSES.sorry);
+  }
+  
+  // إجابة للأسئلة غير المتعلقة
+  if (questionType === "unrelated") {
+    return getUnrelatedAnswer(normalizedQuestion);
+  }
+  
+  // البحث في قاعدة المعرفة
+  const searchResult = searchKnowledgeBase(normalizedQuestion);
+  
+  if (searchResult) {
+    // تنويع الإجابة المسترجعة
+    return diversifyResponse(searchResult.topic.response);
+  }
+  
+  // إجابة افتراضية محسنة
+  return diversifyResponse(getDefaultResponse(normalizedQuestion));
+}
+
+/**
+ * دالة تنسيق المصادر للعرض
+ */
 export function formatSources(sources: Source[]): string {
   return sources.map(s => `• ${s.text} (${s.reference})`).join('\n');
 }
 
-// دالة للتحقق من الأسئلة الدينية
+/**
+ * دالة للتحقق من الأسئلة الدينية
+ */
 export function isReligiousQuestion(question: string): boolean {
   const religiousKeywords = [
     'الله', 'الإسلام', 'الإيمان', 'القرآن', 'الصلاة', 'الزكاة', 'الصيام', 'الحج',
@@ -645,9 +938,15 @@ export function isReligiousQuestion(question: string): boolean {
     'الملائكة', 'الجن', 'إبليس', 'الشيطان', 'الغيب', 'القلم', 'اللوح', 'الدواة',
     'الفقه', 'أصول الدين', 'التفسير', 'علوم القرآن', 'القراءات', 'التجويد',
     'السيرة', 'الغزوات', 'الصحابة', 'التابعين', 'أهل البيت', 'العلماء', 'الفقهاء',
-    'كيف', 'ما', 'لماذا', 'متى', 'هل', 'هلل', 'عم', 'في', 'عن', 'من', 'ماهو'
   ];
   
   const lowerQuestion = question.toLowerCase();
   return religiousKeywords.some(keyword => lowerQuestion.includes(keyword));
+}
+
+/**
+ * الحصول على النص القانوني للتنويه
+ */
+export function getLegalDisclaimer(): string {
+  return randomPick(NOTIFICATION_PHRASES);
 }
