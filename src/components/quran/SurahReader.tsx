@@ -344,7 +344,7 @@ export function SurahReader({
       </div>
 
       {current !== null && (
-        <div className="fixed inset-x-0 bottom-[5.75rem] z-50 mx-auto w-[calc(100%-1.5rem)] max-w-xl rounded-2xl border border-border bg-card/95 px-4 py-3 backdrop-blur-xl">
+        <div className="fixed inset-x-0 bottom-[5.75rem] z-50 mx-auto w-[calc(100%-1.5rem)] max-w-xl rounded-2xl border border-[color-mix(in_oklab,var(--gold)_40%,transparent)] bg-card px-4 py-3 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.45)] backdrop-blur-xl">
           <div className="mb-2 flex items-center justify-between gap-3">
             <div className="min-w-0">
               <p className="truncate text-sm font-bold">
