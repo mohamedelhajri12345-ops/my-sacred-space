@@ -6,6 +6,7 @@ import { formatHijri } from "@/lib/hijri";
 import { haptic } from "@/lib/haptics";
 import { BottomNav } from "./BottomNav";
 import { AnimatedBackground } from "./AnimatedBackground";
+import { PrayingPerson } from "@/components/icons/PrayingPerson";
 
 export function AppShell({
   children,
@@ -28,9 +29,14 @@ export function AppShell({
       )}
       <header className="sticky top-0 z-30 border-b border-border/60 bg-background/80 backdrop-blur-xl" style={{ boxShadow: '0 4px 20px rgba(27, 42, 74, 0.08)' }}>
         <div className="mx-auto flex max-w-xl items-center justify-between gap-3 px-4 py-3">
-          <div className="min-w-0">
-            <h1 className="truncate text-lg font-bold leading-tight" style={{ fontFamily: 'Amiri, serif' }}>{title ?? "أحلام الروح"}</h1>
-            <p className="truncate text-xs text-muted-foreground">{subtitle ?? formatHijri(new Date())}</p>
+          <div className="flex min-w-0 items-center gap-2.5">
+            <span className="gradient-gold flex size-9 shrink-0 items-center justify-center rounded-xl text-gold-foreground shadow-sm">
+              <PrayingPerson className="size-6" />
+            </span>
+            <div className="min-w-0">
+              <h1 className="font-display truncate text-lg font-bold leading-tight">{title ?? "أحلام الروح"}</h1>
+              <p className="truncate text-xs text-muted-foreground">{subtitle ?? formatHijri(new Date())}</p>
+            </div>
           </div>
           <div className="flex items-center gap-1.5">
             {!online && (

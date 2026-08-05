@@ -18,6 +18,7 @@ import { Route as LocationRouteImport } from './routes/location'
 import { Route as PrayerRouteImport } from './routes/prayer'
 import { Route as QiblaRouteImport } from './routes/qibla'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AthkarIndexRouteImport } from './routes/athkar.index'
 import { Route as AthkarCategoryIdRouteImport } from './routes/athkar.$categoryId'
 import { Route as AthkarTasbihRouteImport } from './routes/athkar.tasbih'
@@ -69,6 +70,11 @@ const SettingsRoute = SettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AthkarIndexRoute = AthkarIndexRouteImport.update({
   id: '/athkar/',
   path: '/athkar/',
@@ -105,6 +111,7 @@ export interface FileRoutesByFullPath {
   '/prayer': typeof PrayerRoute
   '/qibla': typeof QiblaRoute
   '/settings': typeof SettingsRoute
+  '/api/chat': typeof ApiChatRoute
   '/athkar/$categoryId': typeof AthkarCategoryIdRoute
   '/athkar/tasbih': typeof AthkarTasbihRoute
   '/quran/$surahId': typeof QuranSurahIdRoute
@@ -121,6 +128,7 @@ export interface FileRoutesByTo {
   '/prayer': typeof PrayerRoute
   '/qibla': typeof QiblaRoute
   '/settings': typeof SettingsRoute
+  '/api/chat': typeof ApiChatRoute
   '/athkar/$categoryId': typeof AthkarCategoryIdRoute
   '/athkar/tasbih': typeof AthkarTasbihRoute
   '/quran/$surahId': typeof QuranSurahIdRoute
@@ -138,6 +146,7 @@ export interface FileRoutesById {
   '/prayer': typeof PrayerRoute
   '/qibla': typeof QiblaRoute
   '/settings': typeof SettingsRoute
+  '/api/chat': typeof ApiChatRoute
   '/athkar/$categoryId': typeof AthkarCategoryIdRoute
   '/athkar/tasbih': typeof AthkarTasbihRoute
   '/quran/$surahId': typeof QuranSurahIdRoute
@@ -156,6 +165,7 @@ export interface FileRouteTypes {
     | '/prayer'
     | '/qibla'
     | '/settings'
+    | '/api/chat'
     | '/athkar/$categoryId'
     | '/athkar/tasbih'
     | '/quran/$surahId'
@@ -172,6 +182,7 @@ export interface FileRouteTypes {
     | '/prayer'
     | '/qibla'
     | '/settings'
+    | '/api/chat'
     | '/athkar/$categoryId'
     | '/athkar/tasbih'
     | '/quran/$surahId'
@@ -188,6 +199,7 @@ export interface FileRouteTypes {
     | '/prayer'
     | '/qibla'
     | '/settings'
+    | '/api/chat'
     | '/athkar/$categoryId'
     | '/athkar/tasbih'
     | '/quran/$surahId'
@@ -205,6 +217,7 @@ export interface RootRouteChildren {
   PrayerRoute: typeof PrayerRoute
   QiblaRoute: typeof QiblaRoute
   SettingsRoute: typeof SettingsRoute
+  ApiChatRoute: typeof ApiChatRoute
   AthkarCategoryIdRoute: typeof AthkarCategoryIdRoute
   AthkarTasbihRoute: typeof AthkarTasbihRoute
   QuranSurahIdRoute: typeof QuranSurahIdRoute
@@ -277,6 +290,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/athkar/': {
       id: '/athkar/'
       path: '/athkar'
@@ -325,6 +345,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrayerRoute: PrayerRoute,
   QiblaRoute: QiblaRoute,
   SettingsRoute: SettingsRoute,
+  ApiChatRoute: ApiChatRoute,
   AthkarCategoryIdRoute: AthkarCategoryIdRoute,
   AthkarTasbihRoute: AthkarTasbihRoute,
   QuranSurahIdRoute: QuranSurahIdRoute,
@@ -334,13 +355,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

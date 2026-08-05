@@ -130,34 +130,84 @@ export function ChatFab() {
     if (open) inputRef.current?.focus();
   }, [open]);
 
-  const send = (text: string) => {
+  const answerLocally = (value: string, note?: string) => {
+    const response = getIslamicAnswer(value);
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: crypto.randomUUID(),
+        role: "assistant",
+        text: note ? `${note}\n\n${response.answer}` : response.answer,
+        sources: response.sources,
+        relatedTopics: response.relatedTopics,
+      },
+    ]);
+  };
+
+  const send = async (text: string) => {
     const value = text.trim();
     if (!value || thinking) return;
     haptic("medium");
-    
-    // Add user message
+
+    const history = [...messages.filter((m) => m.id !== "welcome"), {
+      id: crypto.randomUUID(),
+      role: "user" as const,
+      text: value,
+    }];
     setMessages((prev) => [...prev, { id: crypto.randomUUID(), role: "user", text: value }]);
     setInput("");
     setThinking(true);
-    
-    // Simulate AI processing
-    window.setTimeout(() => {
+
+    if (!online) {
+      answerLocally(value, "🔌 أنت غير متصل بالإنترنت، وهذه إجابة من قاعدة المعرفة المحفوظة داخل التطبيق:");
+      setThinking(false);
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: history.map((m) => ({
+            id: m.id,
+            role: m.role,
+            parts: [{ type: "text", text: m.text }],
+          })),
+        }),
+      });
+
+      if (!res.ok || !res.body) {
+        if (res.status === 429) throw new Error("كثرة الطلبات، انتظر قليلًا ثم أعد المحاولة.");
+        if (res.status === 402) throw new Error("انتهى رصيد الذكاء الاصطناعي لهذا التطبيق.");
+        throw new Error("تعذّر الاتصال بالمساعد.");
+      }
+
+      const id = crypto.randomUUID();
+      setMessages((prev) => [...prev, { id, role: "assistant", text: "" }]);
+      setThinking(false);
       haptic("success");
-      const response = getIslamicAnswer(value);
-      
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: crypto.randomUUID(),
-          role: "assistant",
-          text: response.answer,
-          sources: response.sources,
-          relatedTopics: response.relatedTopics,
-        },
-      ]);
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let acc = "";
+      for (;;) {
+        const { value: chunk, done } = await reader.read();
+        if (done) break;
+        acc += decoder.decode(chunk, { stream: true });
+        setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, text: acc } : m)));
+      }
+      if (!acc.trim()) {
+        setMessages((prev) => prev.filter((m) => m.id !== id));
+        answerLocally(value);
+      }
+    } catch (error) {
+      const note = error instanceof Error ? `⚠️ ${error.message}` : "⚠️ حدث خطأ.";
+      answerLocally(value, `${note}\nإليك إجابة من قاعدة المعرفة المحفوظة:`);
+    } finally {
       setThinking(false);
       inputRef.current?.focus();
-    }, 1200 + Math.random() * 800);
+    }
   };
 
   return (
@@ -265,7 +315,7 @@ export function ChatFab() {
                 {SUGGESTIONS.map((s) => (
                   <button
                     key={s}
-                    onClick={() => send(s)}
+                    onClick={() => void send(s)}
                     className="press shrink-0 rounded-full border border-border/50 bg-secondary/50 px-3 py-1.5 text-[11px] text-muted-foreground transition-colors hover:bg-secondary/80"
                   >
                     {s}
@@ -277,7 +327,7 @@ export function ChatFab() {
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
-                  send(input);
+                  void send(input);
                 }}
                 className="flex items-end gap-2"
               >
@@ -289,7 +339,7 @@ export function ChatFab() {
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
-                      send(input);
+                      void send(input);
                     }
                   }}
                   placeholder="اكتب سؤالك هنا..."

@@ -87,7 +87,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         name: "description",
         content: "القرآن الكريم والأذكار ومواقيت الصلاة والقبلة والتقويم الهجري في تطبيق واحد يعمل بدون إنترنت.",
       },
-      { name: "theme-color", content: "#3f5a45" },
+      { name: "theme-color", content: "#16281f" },
       { property: "og:title", content: "نور — تطبيق إسلامي شامل" },
       { property: "og:description", content: "قرآن وأذكار ومواقيت صلاة وقبلة وتقويم هجري، يعمل أوفلاين." },
       { property: "og:type", content: "website" },
@@ -103,7 +103,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Amiri:ital,wght@0,400;0,700;1,400&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Tajawal:wght@300;400;500;700;800&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Amiri:ital,wght@0,400;0,700;1,400&family=Aref+Ruqaa:wght@400;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Tajawal:wght@300;400;500;700;800&display=swap",
       },
       { rel: "manifest", href: "/manifest.webmanifest" },
       { rel: "apple-touch-icon", href: "/icons/icon-192.png" },

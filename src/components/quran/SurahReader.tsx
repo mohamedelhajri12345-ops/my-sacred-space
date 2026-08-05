@@ -77,14 +77,41 @@ export function SurahReader({
     [data, setProgress, surahId],
   );
 
-  // عنصر صوت واحد يُعاد استخدامه مع كل الأحداث
-  const ensureAudio = useCallback(() => {
-    if (audioRef.current) return audioRef.current;
-    const audio = new Audio();
-    audio.preload = "auto";
-    audioRef.current = audio;
-    return audio;
+  /**
+   * تشغيل موحّد بلا تقطّع: عنصرا صوت بالتناوب، يُحمّل الثاني الآية التالية
+   * أثناء تلاوة الأولى فينتقل التشغيل فورًا دون فراغ زمني.
+   */
+  const audioPairRef = useRef<[HTMLAudioElement, HTMLAudioElement] | null>(null);
+  const activeIdx = useRef<0 | 1>(0);
+  const preloadedRef = useRef<number | null>(null);
+
+  const ensureAudios = useCallback(() => {
+    if (audioPairRef.current) return audioPairRef.current;
+    const pair: [HTMLAudioElement, HTMLAudioElement] = [new Audio(), new Audio()];
+    pair.forEach((a) => {
+      a.preload = "auto";
+      a.crossOrigin = "anonymous";
+    });
+    audioPairRef.current = pair;
+    audioRef.current = pair[0];
+    return pair;
   }, []);
+
+  const activeAudio = useCallback(() => ensureAudios()[activeIdx.current]!, [ensureAudios]);
+
+  const preloadAyah = useCallback(
+    (ayah: number) => {
+      if (!surah || ayah < 1 || ayah > surah.c) return;
+      const idle = ensureAudios()[activeIdx.current === 0 ? 1 : 0]!;
+      const src = ayahAudioUrl(settings.reciter, surahId, ayah);
+      if (preloadedRef.current === ayah && idle.src === src) return;
+      idle.pause();
+      idle.src = src;
+      idle.load();
+      preloadedRef.current = ayah;
+    },
+    [ensureAudios, settings.reciter, surah, surahId],
+  );
 
   const playAyah = useCallback(
     (ayah: number) => {
@@ -94,20 +121,38 @@ export function SurahReader({
         toast.error("التلاوة الصوتية تحتاج اتصالًا بالإنترنت");
         return;
       }
-      const audio = ensureAudio();
+      const pair = ensureAudios();
       const src = ayahAudioUrl(settings.reciter, surahId, ayah);
+      const other = activeIdx.current === 0 ? 1 : 0;
+
+      let audio: HTMLAudioElement;
+      if (preloadedRef.current === ayah && pair[other]!.src === src) {
+        // الآية جاهزة مسبقًا: بدّل العنصر فورًا بلا انتظار تحميل
+        pair[activeIdx.current]!.pause();
+        activeIdx.current = other;
+        audio = pair[other]!;
+        audio.currentTime = 0;
+        setBuffering(audio.readyState < 3);
+      } else {
+        audio = pair[activeIdx.current]!;
+        audio.pause();
+        audio.src = src;
+        audio.load();
+        setBuffering(true);
+      }
+      preloadedRef.current = null;
+      audioRef.current = audio;
       setCurrent(ayah);
-      setBuffering(true);
       setPosition(0);
-      setDuration(0);
-      audio.src = src;
-      audio.load();
+      setDuration(Number.isFinite(audio.duration) ? audio.duration : 0);
+
       void audio
         .play()
         .then(() => {
           setIsPlaying(true);
           markRead(ayah);
           document.getElementById(`ayah-${ayah}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+          preloadAyah(ayah + 1);
         })
         .catch((err: unknown) => {
           setIsPlaying(false);
@@ -120,61 +165,66 @@ export function SurahReader({
           );
         });
     },
-    [ensureAudio, markRead, online, settings.reciter, surah, surahId],
+    [ensureAudios, markRead, online, preloadAyah, settings.reciter, surah, surahId],
   );
 
-  // ربط أحداث المشغّل
+  // ربط أحداث المشغّل على العنصرين، مع تجاهل غير النشط
   useEffect(() => {
-    const audio = ensureAudio();
-    const onTime = () => setPosition(audio.currentTime);
-    const onMeta = () => {
-      setDuration(Number.isFinite(audio.duration) ? audio.duration : 0);
-      setBuffering(false);
+    const pair = ensureAudios();
+    const isActive = (a: HTMLAudioElement) => a === pair[activeIdx.current];
+    const handlers: Array<[HTMLAudioElement, string, EventListener]> = [];
+    const on = (a: HTMLAudioElement, type: string, fn: EventListener) => {
+      a.addEventListener(type, fn);
+      handlers.push([a, type, fn]);
     };
-    const onPlay = () => {
-      setIsPlaying(true);
-      setBuffering(false);
-    };
-    const onPause = () => setIsPlaying(false);
-    const onWaiting = () => setBuffering(true);
-    const onError = () => {
-      setIsPlaying(false);
-      setBuffering(false);
-      toast.error("تعذّر تشغيل التلاوة لهذه الآية، جرّب قارئًا آخر من الإعدادات");
-    };
-    audio.addEventListener("timeupdate", onTime);
-    audio.addEventListener("loadedmetadata", onMeta);
-    audio.addEventListener("playing", onPlay);
-    audio.addEventListener("pause", onPause);
-    audio.addEventListener("waiting", onWaiting);
-    audio.addEventListener("error", onError);
-    return () => {
-      audio.removeEventListener("timeupdate", onTime);
-      audio.removeEventListener("loadedmetadata", onMeta);
-      audio.removeEventListener("playing", onPlay);
-      audio.removeEventListener("pause", onPause);
-      audio.removeEventListener("waiting", onWaiting);
-      audio.removeEventListener("error", onError);
-    };
-  }, [ensureAudio]);
 
-  // تشغيل تلقائي للآية التالية
+    pair.forEach((audio) => {
+      on(audio, "timeupdate", () => isActive(audio) && setPosition(audio.currentTime));
+      on(audio, "loadedmetadata", () => {
+        if (!isActive(audio)) return;
+        setDuration(Number.isFinite(audio.duration) ? audio.duration : 0);
+        setBuffering(false);
+      });
+      on(audio, "playing", () => {
+        if (!isActive(audio)) return;
+        setIsPlaying(true);
+        setBuffering(false);
+      });
+      on(audio, "pause", () => isActive(audio) && setIsPlaying(false));
+      on(audio, "waiting", () => isActive(audio) && setBuffering(true));
+      on(audio, "error", () => {
+        if (!isActive(audio)) return;
+        setIsPlaying(false);
+        setBuffering(false);
+        toast.error("تعذّر تشغيل التلاوة لهذه الآية، جرّب قارئًا آخر من الإعدادات");
+      });
+    });
+
+    return () => handlers.forEach(([a, type, fn]) => a.removeEventListener(type, fn));
+  }, [ensureAudios]);
+
+  // انتقال فوري للآية التالية عند انتهاء الحالية
   useEffect(() => {
-    const audio = ensureAudio();
-    const onEnded = () => {
+    const pair = ensureAudios();
+    const onEnded = (e: Event) => {
+      if (e.target !== pair[activeIdx.current]) return;
       if (current !== null && surah && current < surah.c) playAyah(current + 1);
       else {
         setIsPlaying(false);
         setCurrent(null);
       }
     };
-    audio.addEventListener("ended", onEnded);
-    return () => audio.removeEventListener("ended", onEnded);
-  }, [current, ensureAudio, playAyah, surah]);
+    pair.forEach((a) => a.addEventListener("ended", onEnded));
+    return () => pair.forEach((a) => a.removeEventListener("ended", onEnded));
+  }, [current, ensureAudios, playAyah, surah]);
 
   useEffect(
     () => () => {
-      audioRef.current?.pause();
+      audioPairRef.current?.forEach((a) => {
+        a.pause();
+        a.src = "";
+      });
+      audioPairRef.current = null;
       audioRef.current = null;
     },
     [],
@@ -182,7 +232,7 @@ export function SurahReader({
 
   const toggle = (ayah: number) => {
     haptic("light");
-    const audio = ensureAudio();
+    const audio = activeAudio();
     if (current === ayah && isPlaying) {
       audio.pause();
       return;
@@ -195,13 +245,13 @@ export function SurahReader({
   };
 
   const closePlayer = () => {
-    ensureAudio().pause();
+    activeAudio().pause();
     setIsPlaying(false);
     setCurrent(null);
   };
 
   const seek = (value: number) => {
-    const audio = ensureAudio();
+    const audio = activeAudio();
     if (!Number.isFinite(audio.duration)) return;
     audio.currentTime = value;
     setPosition(value);
