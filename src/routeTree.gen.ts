@@ -21,6 +21,7 @@ import { Route as PrayerRouteImport } from './routes/prayer'
 import { Route as QiblaRouteImport } from './routes/qibla'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as ApiConfigRouteImport } from './routes/api/config'
 import { Route as AthkarIndexRouteImport } from './routes/athkar.index'
 import { Route as AthkarCategoryIdRouteImport } from './routes/athkar.$categoryId'
 import { Route as AthkarTasbihRouteImport } from './routes/athkar.tasbih'
@@ -87,6 +88,11 @@ const ApiChatRoute = ApiChatRouteImport.update({
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiConfigRoute = ApiConfigRouteImport.update({
+  id: '/api/config',
+  path: '/api/config',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AthkarIndexRoute = AthkarIndexRouteImport.update({
   id: '/athkar/',
   path: '/athkar/',
@@ -126,6 +132,7 @@ export interface FileRoutesByFullPath {
   '/qibla': typeof QiblaRoute
   '/settings': typeof SettingsRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/config': typeof ApiConfigRoute
   '/athkar/$categoryId': typeof AthkarCategoryIdRoute
   '/athkar/tasbih': typeof AthkarTasbihRoute
   '/quran/$surahId': typeof QuranSurahIdRoute
@@ -145,6 +152,7 @@ export interface FileRoutesByTo {
   '/qibla': typeof QiblaRoute
   '/settings': typeof SettingsRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/config': typeof ApiConfigRoute
   '/athkar/$categoryId': typeof AthkarCategoryIdRoute
   '/athkar/tasbih': typeof AthkarTasbihRoute
   '/quran/$surahId': typeof QuranSurahIdRoute
@@ -165,6 +173,7 @@ export interface FileRoutesById {
   '/qibla': typeof QiblaRoute
   '/settings': typeof SettingsRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/config': typeof ApiConfigRoute
   '/athkar/$categoryId': typeof AthkarCategoryIdRoute
   '/athkar/tasbih': typeof AthkarTasbihRoute
   '/quran/$surahId': typeof QuranSurahIdRoute
@@ -186,6 +195,7 @@ export interface FileRouteTypes {
     | '/qibla'
     | '/settings'
     | '/api/chat'
+    | '/api/config'
     | '/athkar/$categoryId'
     | '/athkar/tasbih'
     | '/quran/$surahId'
@@ -205,6 +215,7 @@ export interface FileRouteTypes {
     | '/qibla'
     | '/settings'
     | '/api/chat'
+    | '/api/config'
     | '/athkar/$categoryId'
     | '/athkar/tasbih'
     | '/quran/$surahId'
@@ -224,6 +235,7 @@ export interface FileRouteTypes {
     | '/qibla'
     | '/settings'
     | '/api/chat'
+    | '/api/config'
     | '/athkar/$categoryId'
     | '/athkar/tasbih'
     | '/quran/$surahId'
@@ -244,6 +256,7 @@ export interface RootRouteChildren {
   QiblaRoute: typeof QiblaRoute
   SettingsRoute: typeof SettingsRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiConfigRoute: typeof ApiConfigRoute
   AthkarCategoryIdRoute: typeof AthkarCategoryIdRoute
   AthkarTasbihRoute: typeof AthkarTasbihRoute
   QuranSurahIdRoute: typeof QuranSurahIdRoute
@@ -337,6 +350,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/config': {
+      id: '/api/config'
+      path: '/api/config'
+      fullPath: '/api/config'
+      preLoaderRoute: typeof ApiConfigRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/athkar/': {
       id: '/athkar/'
       path: '/athkar'
@@ -388,6 +408,7 @@ const rootRouteChildren: RootRouteChildren = {
   QiblaRoute: QiblaRoute,
   SettingsRoute: SettingsRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiConfigRoute: ApiConfigRoute,
   AthkarCategoryIdRoute: AthkarCategoryIdRoute,
   AthkarTasbihRoute: AthkarTasbihRoute,
   QuranSurahIdRoute: QuranSurahIdRoute,
