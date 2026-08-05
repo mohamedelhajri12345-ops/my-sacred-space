@@ -197,6 +197,16 @@
   --sidebar-ring: oklch(0.82 0.105 84);
 }
 
+/* وضع القراءة - كحلي جداً مع ذهبي */
+.reading-mode {
+  --background: oklch(0.08 0.02 250);
+  --foreground: oklch(0.90 0.01 215);
+  --card: oklch(0.11 0.02 250);
+  --card-foreground: oklch(0.90 0.01 215);
+  --gold: oklch(0.78 0.16 70);
+  --gold-soft: oklch(0.68 0.14 68);
+}
+
 @utility gradient-warm {
   background-image: var(--gradient-warm);
 }

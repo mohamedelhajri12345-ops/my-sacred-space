@@ -2,14 +2,15 @@ export type Song = {
   id: string;
   title: string;
   artist: string;
-  category: "nasheed" | "duaa" | "qasida" | "hamd";
+  category: "nasheed" | "duaa" | "quran" | "hamd";
   url: string;
   duration: number; // in seconds
   cover?: string;
+  description?: string;
 };
 
 export const SONGS: Song[] = [
-  // أناشيد إسلامية
+  // ===== أناشيد إسلامية (أكابيلا) =====
   {
     id: "ya-rasulullah",
     title: "يا رسول الله",
@@ -17,6 +18,7 @@ export const SONGS: Song[] = [
     category: "nasheed",
     url: "https://server8.mp3quran.net/islam/E7_Ya_RasulAllah.mp3",
     duration: 240,
+    description: "نشيد ديني جميل في مدح النبي ﷺ",
   },
   {
     id: "salam-alaika",
@@ -25,6 +27,7 @@ export const SONGS: Song[] = [
     category: "nasheed",
     url: "https://server8.mp3quran.net/islam/E1_Salam-Alayka.mp3",
     duration: 210,
+    description: "سلام على خير الأنام",
   },
   {
     id: "ahla-msh-ahla",
@@ -33,6 +36,7 @@ export const SONGS: Song[] = [
     category: "nasheed",
     url: "https://server8.mp3quran.net/islam/E2_Ahla.mp3",
     duration: 195,
+    description: "أحلى المشي مع حبيبي",
   },
   {
     id: "sabri-wa-salmak",
@@ -41,6 +45,7 @@ export const SONGS: Song[] = [
     category: "nasheed",
     url: "https://server8.mp3quran.net/islam/E4_Sabri-Wa-Salmak.mp3",
     duration: 225,
+    description: "الصبر والسلوى مع الله",
   },
   {
     id: "ya-muqtada",
@@ -49,6 +54,7 @@ export const SONGS: Song[] = [
     category: "nasheed",
     url: "https://server8.mp3quran.net/islam/E3_Ya_Muqtada.mp3",
     duration: 200,
+    description: "يا مقتدى بالحب",
   },
   {
     id: "ya-habibi",
@@ -57,6 +63,7 @@ export const SONGS: Song[] = [
     category: "nasheed",
     url: "https://server8.mp3quran.net/islam/E6_Ya-Habibi.mp3",
     duration: 215,
+    description: "نشيد في حب النبي ﷺ",
   },
   {
     id: "ana-al-ard",
@@ -65,6 +72,7 @@ export const SONGS: Song[] = [
     category: "nasheed",
     url: "https://server8.mp3quran.net/islam/E5_Ana-Alal-Ard.mp3",
     duration: 230,
+    description: "أنا على الأرض عابد",
   },
   {
     id: "subhanak",
@@ -73,6 +81,7 @@ export const SONGS: Song[] = [
     category: "nasheed",
     url: "https://server7.mp3quran.net/islam/Subhanak.mp3",
     duration: 180,
+    description: "سبحانك اللهم",
   },
   {
     id: "la-ilaha",
@@ -81,16 +90,54 @@ export const SONGS: Song[] = [
     category: "nasheed",
     url: "https://server7.mp3quran.net/islam/LaIlaha.mp3",
     duration: 195,
+    description: "لا إله إلا الله وحده",
   },
   {
-    id: "madad ya",
+    id: "madad-ya",
     title: "مدد يا رسول الله",
     artist: "رعد محمد القادي",
     category: "nasheed",
     url: "https://server7.mp3quran.net/islam/Madad.mp3",
     duration: 220,
+    description: "مدد يا رسول الله",
   },
-  // أدعية
+  {
+    id: "habibak-ya",
+    title: "حبيبك يا",
+    artist: "رعد محمد القادي",
+    category: "nasheed",
+    url: "https://server7.mp3quran.net/islam/Habibak.mp3",
+    duration: 215,
+    description: "حبيبك يا رسول الله",
+  },
+  {
+    id: "shukran-ya",
+    title: "شكراً يا",
+    artist: "فرقة الوعد",
+    category: "nasheed",
+    url: "https://server8.mp3quran.net/islam/Shukran.mp3",
+    duration: 190,
+    description: "شكراً يا رب",
+  },
+  {
+    id: "bahr-alhub",
+    title: "بحر الحب",
+    artist: "مشاري العفاسي",
+    category: "nasheed",
+    url: "https://server8.mp3quran.net/islam/Bahr-Alhub.mp3",
+    duration: 205,
+    description: "بحر الحب في قلبي",
+  },
+  {
+    id: "Allah-ya",
+    title: "الله يا",
+    artist: "مشاري العفاسي",
+    category: "nasheed",
+    url: "https://server8.mp3quran.net/islam/Allah-Ya.mp3",
+    duration: 195,
+    description: "الله يا الله",
+  },
+  // ===== أدعية من القرآن والسنة =====
   {
     id: "rabbana-ata",
     title: "ربنا آتنا",
@@ -98,6 +145,7 @@ export const SONGS: Song[] = [
     category: "duaa",
     url: "https://server10.mp3quran.net/basit/Almusshaf-Al-Mojawwad/144.mp3",
     duration: 120,
+    description: "ربنا آتنا في الدنيا حسنة",
   },
   {
     id: "rabbana-lana",
@@ -106,6 +154,7 @@ export const SONGS: Song[] = [
     category: "duaa",
     url: "https://server10.mp3quran.net/basit/Almusshaf-Al-Mojawwad/145.mp3",
     duration: 115,
+    description: "ربنا لنا ما أعددت لنا",
   },
   {
     id: "rabbana-ighfir",
@@ -114,25 +163,82 @@ export const SONGS: Song[] = [
     category: "duaa",
     url: "https://server11.mp3quran.net/husr/002.mp3",
     duration: 130,
+    description: "ربنا اغفر لنا ذنوبنا",
   },
-  // قسمات
   {
-    id: "qasidat-alburda",
-    title: "قصيدة البردة",
+    id: "qul-huwa",
+    title: "قل هو الله أحد",
     artist: "مشاري العفاسي",
-    category: "qasida",
-    url: "https://server8.mp3quran.net/islam/Bordat.mp3",
-    duration: 600,
+    category: "duaa",
+    url: "https://server8.mp3quran.net/islam/Qul-Huwa.mp3",
+    duration: 60,
+    description: "سورة الإخلاص - قل هو الله أحد",
+  },
+  // ===== تلاوات متنوعة =====
+  {
+    id: "ya-sin",
+    title: "سورة يس",
+    artist: "عبد الباسط عبد الصمد",
+    category: "quran",
+    url: "https://cdn.islamic.network/quran/audio/128/ar.abdulbasit/36.mp3",
+    duration: 720,
+    description: "سورة يس - قلب القرآن",
   },
   {
-    id: "qasidat-alqassida",
-    title: "القصيدة المباركة",
-    artist: "ماهر المعيقلي",
-    category: "qasida",
-    url: "https://server13.mp3quran.net/maher/002.mp3",
-    duration: 550,
+    id: "ar-rahman",
+    title: "سورة الرحمن",
+    artist: "عبد الباسط عبد الصمد",
+    category: "quran",
+    url: "https://cdn.islamic.network/quran/audio/128/ar.abdulbasit/55.mp3",
+    duration: 540,
+    description: "سورة الرحمن - تسأل",
   },
-  // حمد
+  {
+    id: "al-mulk",
+    title: "سورة الملك",
+    artist: "مشاري العفاسي",
+    category: "quran",
+    url: "https://cdn.islamic.network/quran/audio/128/ar.alafasy/67.mp3",
+    duration: 360,
+    description: "سورة الملك - الجاثية",
+  },
+  {
+    id: "al-kahf",
+    title: "سورة الكهف",
+    artist: "محمود خليل الحصري",
+    category: "quran",
+    url: "https://cdn.islamic.network/quran/audio/128/ar.husary/18.mp3",
+    duration: 1200,
+    description: "سورة الكهف - جميلة",
+  },
+  {
+    id: "muhammad-husary",
+    title: "سورة محمد",
+    artist: "محمود خليل الحصري",
+    category: "quran",
+    url: "https://cdn.islamic.network/quran/audio/128/ar.husary/47.mp3",
+    duration: 480,
+    description: "سورة محمد ﷺ",
+  },
+  {
+    id: "taha-minshawi",
+    title: "سورة طه",
+    artist: "محمد صديق المنشاوي",
+    category: "quran",
+    url: "https://cdn.islamic.network/quran/audio/128/ar.minshawi/20.mp3",
+    duration: 660,
+    description: "سورة طه",
+  },
+  {
+    id: "saffat-alafasy",
+    title: "سورة الصافات",
+    artist: "مشاري العفاسي",
+    category: "quran",
+    url: "https://cdn.islamic.network/quran/audio/128/ar.alafasy/37.mp3",
+    duration: 540,
+    description: "سورة الصافات",
+  },
+  // ===== حمود =====
   {
     id: "hamd-alrahman",
     title: "حمد الرحمن",
@@ -140,6 +246,7 @@ export const SONGS: Song[] = [
     category: "hamd",
     url: "https://server8.mp3quran.net/islam/Hamd-Arrahman.mp3",
     duration: 240,
+    description: "الحمد لله رب العالمين",
   },
   {
     id: "hamd-alhal",
@@ -148,6 +255,7 @@ export const SONGS: Song[] = [
     category: "hamd",
     url: "https://server8.mp3quran.net/islam/Hamd-Alhal.mp3",
     duration: 210,
+    description: "الحمد لله",
   },
   {
     id: "alhamdu-lillah",
@@ -156,55 +264,33 @@ export const SONGS: Song[] = [
     category: "hamd",
     url: "https://server8.mp3quran.net/islam/AlhmaduLillah.mp3",
     duration: 180,
+    description: "الحمد لله على كل حال",
   },
-  // المزيد من الأناشيد
   {
-    id: "ya-muhammad",
-    title: "يا محمد",
-    artist: "رعد محمد القادي",
-    category: "nasheed",
-    url: "https://server7.mp3quran.net/islam/Ya-Muhammad.mp3",
+    id: "alrahman-yasir",
+    title: "الحمد لله",
+    artist: "ياسر الدوسري",
+    category: "hamd",
+    url: "https://server12.mp3quran.net/sds/001.mp3",
     duration: 200,
+    description: "الحمد لله على نعمائه",
   },
   {
-    id: "awwal-alqalb",
-    title: "أول القلوب",
-    artist: "ماهر المعيقلي",
-    category: "nasheed",
-    url: "https://server13.mp3quran.net/maher/055.mp3",
-    duration: 185,
-  },
-  {
-    id: "kaffani",
-    title: "كفاني",
-    artist: "ماهر المعيقلي",
-    category: "nasheed",
-    url: "https://server13.mp3quran.net/maher/056.mp3",
-    duration: 190,
-  },
-  {
-    id: "jabal-nur",
-    title: "جبل نور",
-    artist: "عبد الرحمن السديس",
-    category: "nasheed",
-    url: "https://server12.mp3quran.net/sds/055.mp3",
-    duration: 175,
-  },
-  {
-    id: "shams-alhuda",
-    title: "شمس الهدى",
-    artist: "عبد الرحمن السديس",
-    category: "nasheed",
-    url: "https://server12.mp3quran.net/sds/056.mp3",
-    duration: 180,
+    id: "qalb-almu",
+    title: "قلب مهموم",
+    artist: "فرقة الوعد",
+    category: "hamd",
+    url: "https://server8.mp3quran.net/islam/Qalb-Almu.mp3",
+    duration: 195,
+    description: "قلب مهموم بالذنوب",
   },
 ];
 
 export const CATEGORIES = [
   { id: "all", name: "الكل", icon: "🎵" },
   { id: "nasheed", name: "أناشيد", icon: "🎤" },
-  { id: "duaa", name: "أدعية قرآنية", icon: "🤲" },
-  { id: "qasida", name: "قصائد", icon: "📜" },
+  { id: "duaa", name: "أدعية", icon: "🤲" },
+  { id: "quran", name: "تلاوات", icon: "📖" },
   { id: "hamd", name: "حمود", icon: "✨" },
 ] as const;
 

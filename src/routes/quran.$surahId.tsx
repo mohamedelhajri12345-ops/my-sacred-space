@@ -24,7 +24,7 @@ function SurahPage() {
   const { ayah } = Route.useSearch();
   return (
     <AppShell title="المصحف" subtitle="اضغط على الآية لعرض التفسير">
-      <SurahReader surahId={Number(surahId)} initialAyah={ayah} />
+      <SurahReader surahId={Number(surahId)} />
     </AppShell>
   );
 }

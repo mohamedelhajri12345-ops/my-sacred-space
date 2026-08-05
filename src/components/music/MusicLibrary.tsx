@@ -75,15 +75,16 @@ export function MusicLibrary() {
     };
     const onPause = () => setIsPlaying(false);
     const onWaiting = () => setBuffering(true);
-    const onEnded = () => {
+    	    const onEnded = () => {
       if (isLooping && currentSong) {
         audio.currentTime = 0;
         void audio.play();
       } else {
         // تشغيل الأغنية التالية
         const currentIndex = songs.findIndex((s) => s.id === currentSong?.id);
-        if (currentIndex < songs.length - 1) {
-          playSong(songs[currentIndex + 1]);
+        const nextSong = songs[currentIndex + 1];
+        if (nextSong) {
+          playSong(nextSong);
         } else {
           setIsPlaying(false);
         }
@@ -125,8 +126,9 @@ export function MusicLibrary() {
       void audio.play().catch(() => toast.error("تعذّر متابعة التشغيل"));
       return;
     }
-    if (songs.length > 0) {
-      playSong(songs[0]);
+    const firstSong = songs[0];
+    if (firstSong) {
+      playSong(firstSong);
     }
   };
 
