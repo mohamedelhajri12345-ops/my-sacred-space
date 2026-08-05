@@ -16,10 +16,12 @@ import { Route as JournalRouteImport } from './routes/journal'
 import { Route as KhatmahRouteImport } from './routes/khatmah'
 import { Route as LibraryRouteImport } from './routes/library'
 import { Route as LocationRouteImport } from './routes/location'
+import { Route as NasheedsRouteImport } from './routes/nasheeds'
 import { Route as PrayerRouteImport } from './routes/prayer'
 import { Route as QiblaRouteImport } from './routes/qibla'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as ApiConfigRouteImport } from './routes/api/config'
 import { Route as AthkarIndexRouteImport } from './routes/athkar.index'
 import { Route as AthkarCategoryIdRouteImport } from './routes/athkar.$categoryId'
 import { Route as AthkarTasbihRouteImport } from './routes/athkar.tasbih'
@@ -61,6 +63,11 @@ const LocationRoute = LocationRouteImport.update({
   path: '/location',
   getParentRoute: () => rootRouteImport,
 } as any)
+const NasheedsRoute = NasheedsRouteImport.update({
+  id: '/nasheeds',
+  path: '/nasheeds',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrayerRoute = PrayerRouteImport.update({
   id: '/prayer',
   path: '/prayer',
@@ -79,6 +86,11 @@ const SettingsRoute = SettingsRouteImport.update({
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiConfigRoute = ApiConfigRouteImport.update({
+  id: '/api/config',
+  path: '/api/config',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AthkarIndexRoute = AthkarIndexRouteImport.update({
@@ -115,10 +127,12 @@ export interface FileRoutesByFullPath {
   '/khatmah': typeof KhatmahRoute
   '/library': typeof LibraryRoute
   '/location': typeof LocationRoute
+  '/nasheeds': typeof NasheedsRoute
   '/prayer': typeof PrayerRoute
   '/qibla': typeof QiblaRoute
   '/settings': typeof SettingsRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/config': typeof ApiConfigRoute
   '/athkar/$categoryId': typeof AthkarCategoryIdRoute
   '/athkar/tasbih': typeof AthkarTasbihRoute
   '/quran/$surahId': typeof QuranSurahIdRoute
@@ -133,10 +147,12 @@ export interface FileRoutesByTo {
   '/khatmah': typeof KhatmahRoute
   '/library': typeof LibraryRoute
   '/location': typeof LocationRoute
+  '/nasheeds': typeof NasheedsRoute
   '/prayer': typeof PrayerRoute
   '/qibla': typeof QiblaRoute
   '/settings': typeof SettingsRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/config': typeof ApiConfigRoute
   '/athkar/$categoryId': typeof AthkarCategoryIdRoute
   '/athkar/tasbih': typeof AthkarTasbihRoute
   '/quran/$surahId': typeof QuranSurahIdRoute
@@ -152,10 +168,12 @@ export interface FileRoutesById {
   '/khatmah': typeof KhatmahRoute
   '/library': typeof LibraryRoute
   '/location': typeof LocationRoute
+  '/nasheeds': typeof NasheedsRoute
   '/prayer': typeof PrayerRoute
   '/qibla': typeof QiblaRoute
   '/settings': typeof SettingsRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/config': typeof ApiConfigRoute
   '/athkar/$categoryId': typeof AthkarCategoryIdRoute
   '/athkar/tasbih': typeof AthkarTasbihRoute
   '/quran/$surahId': typeof QuranSurahIdRoute
@@ -172,10 +190,12 @@ export interface FileRouteTypes {
     | '/khatmah'
     | '/library'
     | '/location'
+    | '/nasheeds'
     | '/prayer'
     | '/qibla'
     | '/settings'
     | '/api/chat'
+    | '/api/config'
     | '/athkar/$categoryId'
     | '/athkar/tasbih'
     | '/quran/$surahId'
@@ -190,10 +210,12 @@ export interface FileRouteTypes {
     | '/khatmah'
     | '/library'
     | '/location'
+    | '/nasheeds'
     | '/prayer'
     | '/qibla'
     | '/settings'
     | '/api/chat'
+    | '/api/config'
     | '/athkar/$categoryId'
     | '/athkar/tasbih'
     | '/quran/$surahId'
@@ -208,10 +230,12 @@ export interface FileRouteTypes {
     | '/khatmah'
     | '/library'
     | '/location'
+    | '/nasheeds'
     | '/prayer'
     | '/qibla'
     | '/settings'
     | '/api/chat'
+    | '/api/config'
     | '/athkar/$categoryId'
     | '/athkar/tasbih'
     | '/quran/$surahId'
@@ -227,10 +251,12 @@ export interface RootRouteChildren {
   KhatmahRoute: typeof KhatmahRoute
   LibraryRoute: typeof LibraryRoute
   LocationRoute: typeof LocationRoute
+  NasheedsRoute: typeof NasheedsRoute
   PrayerRoute: typeof PrayerRoute
   QiblaRoute: typeof QiblaRoute
   SettingsRoute: typeof SettingsRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiConfigRoute: typeof ApiConfigRoute
   AthkarCategoryIdRoute: typeof AthkarCategoryIdRoute
   AthkarTasbihRoute: typeof AthkarTasbihRoute
   QuranSurahIdRoute: typeof QuranSurahIdRoute
@@ -289,6 +315,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LocationRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/nasheeds': {
+      id: '/nasheeds'
+      path: '/nasheeds'
+      fullPath: '/nasheeds'
+      preLoaderRoute: typeof NasheedsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/prayer': {
       id: '/prayer'
       path: '/prayer'
@@ -315,6 +348,13 @@ declare module '@tanstack/react-router' {
       path: '/api/chat'
       fullPath: '/api/chat'
       preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/config': {
+      id: '/api/config'
+      path: '/api/config'
+      fullPath: '/api/config'
+      preLoaderRoute: typeof ApiConfigRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/athkar/': {
@@ -363,10 +403,12 @@ const rootRouteChildren: RootRouteChildren = {
   KhatmahRoute: KhatmahRoute,
   LibraryRoute: LibraryRoute,
   LocationRoute: LocationRoute,
+  NasheedsRoute: NasheedsRoute,
   PrayerRoute: PrayerRoute,
   QiblaRoute: QiblaRoute,
   SettingsRoute: SettingsRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiConfigRoute: ApiConfigRoute,
   AthkarCategoryIdRoute: AthkarCategoryIdRoute,
   AthkarTasbihRoute: AthkarTasbihRoute,
   QuranSurahIdRoute: QuranSurahIdRoute,
