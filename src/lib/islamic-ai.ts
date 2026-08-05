@@ -12,7 +12,7 @@ export type Source = {
 export type AIResponse = {
   answer: string;
   sources: Source[];
-  relatedTopics?: string[];
+  relatedTopics?: string[] | undefined;
 };
 
 type IslamicTopic = {
@@ -666,7 +666,7 @@ export function getIslamicAnswer(question: string): AIResponse {
   const randomIndex = Math.floor(Math.random() * generalResponses.length);
   
   return {
-    answer: generalResponses[randomIndex],
+    answer: generalResponses[randomIndex]!,
     sources: [
       { type: "quran", text: "فَاسْأَلُوا أَهْلَ الذِّكْرِ إِن كُنتُمْ لَا تَعْلَمُونَ", reference: "سورة النحل، الآية 43" },
       { type: "scholar", text: "العلم شرط قبل الفتيا", reference: "حديث نبوي" },

@@ -389,20 +389,19 @@
 /* زخرفة الحدود الإسلامية */
 @utility border-islamic {
   position: relative;
-}
-
-@utility border-islamic::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(135deg, transparent 40%, rgba(212, 165, 116, 0.3) 50%, transparent 60%);
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: exclude;
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  pointer-events: none;
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, transparent 40%, rgba(212, 165, 116, 0.3) 50%, transparent 60%);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    pointer-events: none;
+  }
 }
 
 /* فاصل الأقسام الإسلامي */
@@ -411,14 +410,13 @@
   align-items: center;
   gap: 1rem;
   margin: 1.5rem 0;
-}
-
-@utility section-divider::before,
-@utility section-divider::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(212, 165, 116, 0.3), transparent);
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(212, 165, 116, 0.3), transparent);
+  }
 }
 
 @utility section-divider-icon {
@@ -460,11 +458,10 @@
 /* ===== تحسينات البطاقات ===== */
 @utility card-hover {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-@utility card-hover:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 30px rgba(27, 42, 74, 0.15);
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(27, 42, 74, 0.15);
+  }
 }
 
 /* ===== تحسينات الأزرار ===== */

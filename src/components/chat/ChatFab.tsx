@@ -9,8 +9,8 @@ type ChatMessage = {
   id: string;
   role: "user" | "assistant";
   text: string;
-  sources?: Source[];
-  relatedTopics?: string[];
+  sources?: Source[] | undefined;
+  relatedTopics?: string[] | undefined;
 };
 
 const SUGGESTIONS = [

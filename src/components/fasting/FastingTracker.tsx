@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 type FastingDay = {
   date: string; // ISO date string
   type: "ramadan" | "sunnah" | "naafl" | "expiation";
-  note?: string;
+  note?: string | undefined;
 };
 
 type FastingStats = {

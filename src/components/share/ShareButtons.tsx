@@ -36,9 +36,9 @@ export async function shareContent(text: string, title?: string): Promise<void> 
   haptic("medium");
 
   // استخدام Web Share API إن كان متاحاً
-  if (navigator.share && navigator.canShare) {
+  if (typeof navigator.share === "function") {
     try {
-      const result = await navigator.share({
+      await navigator.share({
         title: title ?? "نور - تطبيق إسلامي",
         text: text,
       });
