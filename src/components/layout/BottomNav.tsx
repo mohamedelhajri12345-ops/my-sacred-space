@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { BookOpen, CalendarDays, Home, MoonStar, Sparkles, Sun, Mosque } from "lucide-react";
+import { BookOpen, CalendarDays, Home, MoonStar, Sparkles, Sun } from "lucide-react";
 import { haptic } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 

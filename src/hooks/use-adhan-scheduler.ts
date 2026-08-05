@@ -229,9 +229,9 @@ export function useAdhanScheduler(): AdhanSchedulerState {
         setIsLoading(false);
       }, 100);
       return () => clearTimeout(timer);
-    } else {
-      setIsLoading(false);
     }
+    setIsLoading(false);
+    return undefined;
   }, [next, timings]);
 
   return { 

@@ -10,8 +10,8 @@ export function useTouch() {
   const onTouchStart = useCallback((e: TouchEvent) => {
     if (e.touches.length === 1) {
       touchStartRef.current = {
-        x: e.touches[0].clientX,
-        y: e.touches[0].clientY,
+        x: e.touches[0]!.clientX,
+        y: e.touches[0]!.clientY,
         time: Date.now(),
       };
     }
@@ -88,8 +88,8 @@ export function useSwipe(onSwipeLeft?: () => void, onSwipeRight?: () => void, th
 
   const onTouchStart = useCallback((e: TouchEvent) => {
     touchStartRef.current = {
-      x: e.touches[0].clientX,
-      y: e.touches[0].clientY,
+      x: e.touches[0]!.clientX,
+      y: e.touches[0]!.clientY,
     };
   }, []);
 
@@ -97,6 +97,7 @@ export function useSwipe(onSwipeLeft?: () => void, onSwipeRight?: () => void, th
     if (!touchStartRef.current) return;
 
     const touchEnd = e.changedTouches[0];
+    if (!touchEnd) return;
     const deltaX = touchEnd.clientX - touchStartRef.current.x;
     const deltaY = touchEnd.clientY - touchStartRef.current.y;
 
@@ -126,8 +127,8 @@ export function createRipple(event: React.MouseEvent | React.TouchEvent, color =
   let clientX: number, clientY: number;
   
   if ("touches" in event) {
-    clientX = event.touches[0].clientX;
-    clientY = event.touches[0].clientY;
+    clientX = event.touches[0]!.clientX;
+    clientY = event.touches[0]!.clientY;
   } else {
     clientX = event.clientX;
     clientY = event.clientY;

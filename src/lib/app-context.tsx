@@ -70,6 +70,7 @@ type AppContextValue = {
   coords: Coords;
   setCoords: (c: Coords) => void;
   place: PlaceInfo | null;
+  setPlace: (p: PlaceInfo | null) => void;
   locating: boolean;
   locationError: string | null;
   requestLocation: () => Promise<void>;
@@ -197,6 +198,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       coords,
       setCoords,
       place,
+      setPlace,
       locating,
       locationError,
       requestLocation,
@@ -206,7 +208,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       adjustPrayer,
       resetPrayerAdjustments,
     }),
-    [settings, updateSettings, coords, setCoords, place, locating, locationError, requestLocation, streak, markThikrSession, online, adjustPrayer, resetPrayerAdjustments],
+    [settings, updateSettings, coords, setCoords, place, setPlace, locating, locationError, requestLocation, streak, markThikrSession, online, adjustPrayer, resetPrayerAdjustments],
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
