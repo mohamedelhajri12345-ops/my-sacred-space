@@ -1,17 +1,17 @@
 {
-  "name": "نور — تطبيق إسلامي شامل",
-  "short_name": "نور",
-  "description": "القرآن والأذكار ومواقيت الصلاة والقبلة والتقويم الهجري، يعمل بدون إنترنت مع إشعارات صوتية.",
+  "name": "My Sacred Space - رفيقك في العبادة",
+  "short_name": "Sacred Space",
+  "description": "تطبيق إسلامي شامل: القرآن والأذكار ومواقيت الصلاة والقبلة والتقويم الهجري مع مساعد ذكي",
   "lang": "ar",
   "dir": "rtl",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui"],
-  "orientation": "portrait",
-  "background_color": "#1a1a3a",
-  "theme_color": "#D97706",
-  "categories": ["lifestyle", "education"],
+  "orientation": "portrait-primary",
+  "background_color": "#1a3328",
+  "theme_color": "#2d4a3e",
+  "categories": ["lifestyle", "education", "books"],
   "shortcuts": [
     {
       "name": "القرآن الكريم",
@@ -32,13 +32,6 @@
       "short_name": "الصلاة",
       "description": "تعرف على أوقات الصلاة",
       "url": "/prayer",
-      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
-    },
-    {
-      "name": "المكتبة الصوتية",
-      "short_name": "الأناشيد",
-      "description": "أناشيد وأدعية إسلامية",
-      "url": "/library",
       "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
     }
   ],
