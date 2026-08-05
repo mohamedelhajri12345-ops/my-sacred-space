@@ -76,23 +76,33 @@ export function toArabicNumber(n: number) {
 export type Bookmark = { surah: number; ayah: number; surahName: string; text: string; at: number };
 export type ReadingProgress = { surah: number; ayah: number; readAyahs: number; updatedAt: number };
 
-export type Reciter = { id: string; name: string; dir: string; mp3quranDir: string; server?: string; islamicNetworkId?: string };
+export type Reciter = { 
+  id: string; 
+  name: string; 
+  dir: string; 
+  mp3quranDir: string; 
+  server?: string; 
+  islamicNetworkId?: string;
+  server2?: string;
+  server3?: string;
+};
 
 /**
- * مصادر التلاوة الصوتية - تم تحسين الروابط لتعمل بشكل أفضل
- * نستخدم cdn.islamic.network كمصدر أساسي لأنه الأكثر موثوقية
+ * مصادر التلاوة الصوتية - محسّنة مع مصادر متعددة كـ fallback
  */
 export const RECITERS: Reciter[] = [
-  { id: "ar.alafasy", name: "مشاري راشد العفاسي", dir: "Alafasy_128kbps", mp3quranDir: "mishary_alafasy", server: "https://server8.mp3quran.net", islamicNetworkId: "ar.alafasy" },
-  { id: "ar.mahermuaiqly", name: "ماهر المعيقلي", dir: "MaherAlMuaiqly128kbps", mp3quranDir: "maher_almuaiqly", server: "https://server13.mp3quran.net", islamicNetworkId: "ar.maher" },
-  { id: "ar.yasserdossari", name: "ياسر الدوسري", dir: "Yasser_Ad-Dussary_128kbps", mp3quranDir: "yasser_ad_dussary", server: "https://server12.mp3quran.net" },
-  { id: "ar.abdulbasitmurattal", name: "عبد الباسط عبد الصمد", dir: "Abdul_Basit_Murattal_192kbps", mp3quranDir: "abdulbasit_murattal", server: "https://server10.mp3quran.net" },
-  { id: "ar.husary", name: "محمود خليل الحصري", dir: "Husary_128kbps", mp3quranDir: "husary", server: "https://server11.mp3quran.net", islamicNetworkId: "ar.husary" },
-  { id: "ar.minshawi", name: "محمد صديق المنشاوي", dir: "Minshawy_Murattal_128kbps", mp3quranDir: "minshawi", server: "https://server7.mp3quran.net" },
-  { id: "ar.afasy", name: "خالد الجليل", dir: "Alafasy_128kbps", mp3quranDir: "khaled_al_jil", server: "https://server8.mp3quran.net" },
-  { id: "ar.husarymuallim", name: "الحصري - المعلم", dir: "Husary_128kbps", mp3quranDir: "husary_mujawwad", server: "https://server11.mp3quran.net" },
-  { id: "ar.abdulbasit", name: "عبد الباسط عبد الصمد - مرتل", dir: "Abdul_Basit_Murattal_192kbps", mp3quranDir: "abdulbasit", server: "https://server10.mp3quran.net" },
-  { id: "ar.shuraym", name: "سعود الشريم", dir: "Sudais_128kbps", mp3quranDir: "saud_shamiri", server: "https://server11.mp3quran.net" },
+  { id: "ar.alafasy", name: "مشاري راشد العفاسي", dir: "Alafasy_128kbps", mp3quranDir: "mishary_alafasy", server: "https://server8.mp3quran.net", islamicNetworkId: "ar.alafasy", server2: "https://cdn.islamic.network/quran/audio-surah/128/ar.alafasy", server3: "https://everyayah.com/data/Alafasy_128kbps" },
+  { id: "ar.mahermuaiqly", name: "ماهر المعيقلي", dir: "MaherAlMuaiqly128kbps", mp3quranDir: "maher_almuaiqly", server: "https://server13.mp3quran.net", islamicNetworkId: "ar.maher", server2: "https://cdn.islamic.network/quran/audio-surah/128/ar.maher", server3: "https://everyayah.com/data/MaherAlMuaiqly128kbps" },
+  { id: "ar.yasserdossari", name: "ياسر الدوسري", dir: "Yasser_Ad-Dussary_128kbps", mp3quranDir: "yasser_ad_dussary", server: "https://server12.mp3quran.net", server2: "https://everyayah.com/data/Yasser_Ad-Dussary_128kbps" },
+  { id: "ar.abdulbasitmurattal", name: "عبد الباسط عبد الصمد (مرتل)", dir: "Abdul_Basit_Murattal_192kbps", mp3quranDir: "abdulbasit_murattal", server: "https://server10.mp3quran.net", server2: "https://everyayah.com/data/Abdul_Basit_Murattal_192kbps" },
+  { id: "ar.husary", name: "محمود خليل الحصري", dir: "Husary_128kbps", mp3quranDir: "husary", server: "https://server11.mp3quran.net", islamicNetworkId: "ar.husary", server2: "https://cdn.islamic.network/quran/audio-surah/128/ar.husary", server3: "https://everyayah.com/data/Husary_128kbps" },
+  { id: "ar.minshawi", name: "محمد صديق المنشاوي", dir: "Minshawy_Murattal_128kbps", mp3quranDir: "minshawi", server: "https://server7.mp3quran.net", server2: "https://everyayah.com/data/Minshawy_Murattal_128kbps" },
+  { id: "ar.afasy", name: "خالد الجليل", dir: "Alafasy_128kbps", mp3quranDir: "khaled_al_jil", server: "https://server8.mp3quran.net", server2: "https://everyayah.com/data/Alafasy_128kbps" },
+  { id: "ar.husarymuallim", name: "الحصري - المعلم (مجود)", dir: "Husary_128kbps", mp3quranDir: "husary_mujawwad", server: "https://server11.mp3quran.net", server2: "https://everyayah.com/data/Husary_Muallim_128kbps" },
+  { id: "ar.abdulbasit", name: "عبد الباسط عبد الصمد (مرتل)", dir: "Abdul_Basit_Murattal_192kbps", mp3quranDir: "abdulbasit", server: "https://server10.mp3quran.net", server2: "https://everyayah.com/data/Abdul_Basit_Murattal_192kbps" },
+  { id: "ar.shuraym", name: "سعود الشريم", dir: "Sudais_128kbps", mp3quranDir: "saud_shamiri", server: "https://server11.mp3quran.net", server2: "https://everyayah.com/data/Sudais_128kbps" },
+  { id: "ar.abdurrahmaansudais", name: "عبد الرحمن السديس", dir: "Sudais_128kbps", mp3quranDir: "sudais", server: "https://server11.mp3quran.net", server2: "https://everyayah.com/data/Sudais_128kbps" },
+  { id: "ar.bukhatirmashaiq", name: "ياسر الأحمد", dir: "Bukhatir_128kbps", mp3quranDir: "bukhatir", server: "https://server8.mp3quran.net", server2: "https://everyayah.com/data/Bukhatir_128kbps" },
 ];
 
 const pad3 = (n: number) => String(n).padStart(3, "0");
@@ -101,30 +111,45 @@ export function getReciter(id: string): Reciter {
   return RECITERS.find((r) => r.id === id) ?? RECITERS[0]!;
 }
 
-/** رابط تلاوة آية محددة من cdn.islamic.network - المصدر الأكثر موثوقية */
+/** رابط تلاوة آية محددة مع fallback متعدد المصادر */
 export function ayahAudioUrl(reciterId: string, surah: number, ayah: number) {
   const r = getReciter(reciterId);
-  // استخدام cdn.islamic.network كمصدر أساسي
+  const padded = pad3(surah);
+  const ayahPadded = pad3(ayah);
+  
+  // المحاولة الأولى: cdn.islamic.network
   if (r.islamicNetworkId) {
     return `https://cdn.islamic.network/quran/audio/128/${r.islamicNetworkId}/${ayah}.mp3`;
   }
-  // fallback إلى everyayah.com
-  return `https://everyayah.com/data/${r.dir}/${pad3(surah)}${pad3(ayah)}.mp3`;
+  
+  // fallback: mp3quran.net
+  const server = r.server || "https://server8.mp3quran.net";
+  return `${server}/${r.mp3quranDir}/${padded}${ayahPadded}.mp3`;
 }
 
-/** رابط تلاوة سورة كاملة - مع تحسين الموثوقية */
+/** رابط تلاوة سورة كاملة - مع fallback متعدد المصادر */
 export function surahAudioUrl(reciterId: string, surah: number) {
   const r = getReciter(reciterId);
   const padded = pad3(surah);
   
-  // استخدام cdn.islamic.network للسور الكاملة إذا كان متاحاً
+  // المحاولة الأولى: cdn.islamic.network
   if (r.islamicNetworkId) {
     return `https://cdn.islamic.network/quran/audio-surah/128/${r.islamicNetworkId}/${surah}.mp3`;
   }
   
-  // fallback إلى mp3quran.net
+  // fallback: mp3quran.net
   const server = r.server || "https://server8.mp3quran.net";
   return `${server}/${r.mp3quranDir}/${padded}.mp3`;
+}
+
+/** التحقق من توفر مصدر الصوت (للاستخدام المستقبلي مع failover) */
+export async function checkAudioSource(url: string): Promise<boolean> {
+  try {
+    const response = await fetch(url, { method: "HEAD", mode: "cors" });
+    return response.ok;
+  } catch {
+    return false;
+  }
 }
 
 /** Global ayah number (1-6236) needed by most recitation CDNs. */

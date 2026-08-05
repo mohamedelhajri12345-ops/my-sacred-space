@@ -7,8 +7,15 @@ import {
   Repeat,
   ChevronUp,
   ChevronDown,
+  Volume2,
+  VolumeX,
+  Minimize2,
+  Maximize2,
+  ListMusic,
+  User
 } from "lucide-react";
 import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   getReciter,
   globalAyahNumber,
@@ -34,6 +41,8 @@ export function SurahReader({
   const [duration, setDuration] = useState(0);
   const [isLooping, setIsLooping] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
+  const [volume, setVolume] = useState(1);
+  const [isMuted, setIsMuted] = useState(false);
   const [, setProgress] = useLocalStorage<ReadingProgress | null>("islamic:progress", null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -55,15 +64,15 @@ export function SurahReader({
     [data, setProgress, surahId],
   );
 
-  // عنصر صوت واحد للسورة الكاملة
   const ensureAudio = useCallback(() => {
     if (audioRef.current) return audioRef.current;
     const audio = new Audio();
     audio.preload = "auto";
     audio.crossOrigin = "anonymous";
+    audio.volume = volume;
     audioRef.current = audio;
     return audio;
-  }, []);
+  }, [volume]);
 
   const playSurah = useCallback(() => {
     if (!surah) return;
@@ -79,7 +88,6 @@ export function SurahReader({
     audio.src = src;
     audio.load();
     
-    // محاولة التشغيل مع معالجة أفضل للأخطاء
     const playPromise = audio.play();
     if (playPromise !== undefined) {
       playPromise.then(() => {
@@ -88,18 +96,16 @@ export function SurahReader({
       }).catch((err: unknown) => {
         setIsPlaying(false);
         setBuffering(false);
-        console.error('Audio play error:', err);
         const name = err instanceof Error ? err.name : "";
         if (name === "NotAllowedError") {
           toast.error("اضغط زر التشغيل مرة أخرى للسماح بتشغيل الصوت");
         } else {
-          toast.error("تعذّر تحميل ملف التلاوة، تحقّق من الاتصال أو جرّب قارئًا آخر");
+          toast.error("تعذّر تحميل ملف التلاوة، جرّب قارئًا آخر");
         }
       });
     }
   }, [ensureAudio, markRead, online, settings.reciter, surah, surahId]);
 
-  // ربط أحداث المشغّل
   useEffect(() => {
     const audio = ensureAudio();
     const onTime = () => setPosition(audio.currentTime);
@@ -124,7 +130,7 @@ export function SurahReader({
     const onError = () => {
       setIsPlaying(false);
       setBuffering(false);
-      toast.error("تعذّر تشغيل التلاوة لهذه السورة، جرّب قارئًا آخر من الإعدادات");
+      toast.error("تعذّر تشغيل التلاوة، جرّب قارئًا آخر");
     };
     audio.addEventListener("timeupdate", onTime);
     audio.addEventListener("loadedmetadata", onMeta);
@@ -147,7 +153,6 @@ export function SurahReader({
   useEffect(
     () => () => {
       audioRef.current?.pause();
-      audioRef.current = null;
     },
     [],
   );
@@ -161,7 +166,6 @@ export function SurahReader({
     }
     if (audio.src && audio.src !== "") {
       audio.play().catch((err) => {
-        console.error('Resume playback error:', err);
         toast.error("تعذّر متابعة التشغيل");
       });
       return;
@@ -181,11 +185,43 @@ export function SurahReader({
     setIsLooping(!isLooping);
   };
 
+  const handleVolumeChange = (value: number) => {
+    const audio = audioRef.current;
+    setVolume(value);
+    setIsMuted(value === 0);
+    if (audio) audio.volume = value;
+  };
+
+  const toggleMute = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (isMuted) {
+      audio.volume = volume || 1;
+      setIsMuted(false);
+    } else {
+      audio.volume = 0;
+      setIsMuted(true);
+    }
+    haptic("light");
+  };
+
+  const skip = (seconds: number) => {
+    const audio = audioRef.current;
+    if (!audio || !Number.isFinite(audio.duration)) return;
+    audio.currentTime = Math.max(0, Math.min(audio.duration, audio.currentTime + seconds));
+    haptic("light");
+  };
+
   if (isLoading || !surah) {
     return (
-      <div className="flex flex-col items-center justify-center gap-3 py-20 text-white/80">
-        <Loader2 className="size-8 animate-spin text-[var(--gold)]" />
-        <p className="text-sm text-white/70">جارٍ تحميل المصحف…</p>
+      <div className="flex flex-col items-center justify-center gap-4 py-20">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+        >
+          <Loader2 className="size-10 text-primary" />
+        </motion.div>
+        <p className="text-sm text-muted-foreground">جارٍ تحميل السورة...</p>
       </div>
     );
   }
@@ -200,207 +236,190 @@ export function SurahReader({
   const progressPercent = duration > 0 ? (position / duration) * 100 : 0;
 
   return (
-    <div className="min-h-screen">
-      {/* Header - شفاف مع نص أغمق */}
-      <div className="glass-card p-6 text-center mb-4">
-        <p className="text-xs text-white/60 mb-1">
-          {surah.t === "meccan" ? "مكية" : "مدنية"} · {toArabicNumber(surah.c)} آية
-        </p>
-        <h2 className="font-display text-4xl font-bold text-white drop-shadow-lg">سورة {surah.n}</h2>
+    <div className="min-h-screen pb-36">
+      {/* Header */}
+      <motion.div 
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-6 rounded-2xl border border-border/50 bg-gradient-to-br from-primary/10 to-teal/10 p-6"
+      >
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs text-muted-foreground">
+              {surah.t === "meccan" ? "مكية" : "مدنية"} · {toArabicNumber(surah.c)} آية
+            </p>
+            <h2 className="font-display text-3xl font-bold mt-1">{surah.n}</h2>
+          </div>
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <User className="size-4" />
+            <span className="text-xs">{reciter.name}</span>
+          </div>
+        </div>
+        
         {surahId !== 1 && surahId !== 9 && (
-          <p className="quran-text mt-3 text-[1.4rem] text-[var(--gold)] drop-shadow-sm">
+          <p className="quran-text mt-4 text-center text-xl text-primary">
             بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
           </p>
         )}
-        <p className="mt-2 text-xs text-white/50">القارئ: {reciter.name}</p>
-      </div>
+      </motion.div>
 
-      {/* القرآن المتصل - شفاف */}
-      <div className="glass-card p-6 mb-4">
-        <p className="quran-text text-justify text-xl leading-[2.8] tracking-wide text-white drop-shadow-md" dir="rtl">
+      {/* القرآن */}
+      <div className="rounded-2xl border border-border/50 bg-card p-6">
+        <p className="quran-text text-justify text-xl leading-[2.8] tracking-wide" dir="rtl">
           {surah.v.map((text, index) => (
             <span key={index} className="inline">
               {text}
-              <span className="mx-1 inline-flex size-6 items-center justify-center rounded-full bg-white/20 align-middle font-sans text-xs text-[var(--gold)] backdrop-blur-sm">
+              <motion.span 
+                whileHover={{ scale: 1.1 }}
+                className="mx-1 inline-flex size-7 items-center justify-center rounded-full bg-primary/10 align-middle font-sans text-xs text-primary"
+              >
                 {toArabicNumber(index + 1)}
-              </span>
+              </motion.span>
               {" "}
             </span>
           ))}
         </p>
       </div>
       
-      {/* مسافة إضافية للأسفل */}
-      <div className="h-48" />
-    </div>
-  );
-}
-
-// مشغل التلاوة المتحرك - منفصل عن المحتوى
-export function FloatingAudioPlayer({
-  isPlaying,
-  buffering,
-  position,
-  duration,
-  isLooping,
-  onToggle,
-  onSeek,
-  onToggleLoop,
-  onMinimize,
-  onMaximize,
-  isMinimized,
-  surahName,
-  reciterName,
-}: {
-  isPlaying: boolean;
-  buffering: boolean;
-  position: number;
-  duration: number;
-  isLooping: boolean;
-  onToggle: () => void;
-  onSeek: (value: number) => void;
-  onToggleLoop: () => void;
-  onMinimize: () => void;
-  onMaximize: () => void;
-  isMinimized: boolean;
-  surahName?: string;
-  reciterName?: string;
-}) {
-  const fmt = (s: number) => {
-    if (!Number.isFinite(s) || s <= 0) return "٠:٠٠";
-    const m = Math.floor(s / 60);
-    const sec = Math.floor(s % 60);
-    return `${m}:${String(sec).padStart(2, "0")}`;
-  };
-
-  const progressPercent = duration > 0 ? (position / duration) * 100 : 0;
-
-  return (
-    <>
-      {/* المشغل المصغر */}
-      {isMinimized && (
-        <button
-          onClick={onMaximize}
-          className="fixed bottom-24 left-4 z-50 flex items-center gap-3 glass-card rounded-full px-4 py-3 transition-all duration-300 hover:scale-105 active:scale-95"
-          style={{
-            boxShadow: '0 8px 32px -8px rgba(0, 0, 0, 0.4), 0 0 20px rgba(212, 175, 55, 0.2)'
-          }}
-        >
-          <div className={cn(
-            "flex size-10 items-center justify-center rounded-full transition-all duration-300",
-            isPlaying ? "bg-[var(--gold)] text-[#1a1a3a]" : "bg-white/20 text-white"
-          )}>
-            {buffering ? (
-              <Loader2 className="size-5 animate-spin" />
-            ) : isPlaying ? (
-              <Pause className="size-5" />
-            ) : (
-              <Play className="size-5 mr-0.5" />
-            )}
-          </div>
-          <div className="text-right">
-            <p className="text-xs font-bold text-white">{surahName || "التلاوة"}</p>
-            <p className="text-[10px] text-white/60">{reciterName}</p>
-          </div>
-          <div className="h-8 w-px bg-white/20 mx-1" />
-          <span className="text-[10px] text-white/60 tabular-nums">{fmt(position)}</span>
-        </button>
-      )}
-
-      {/* المشغل الكامل */}
-      {!isMinimized && (
-        <div 
-          className="fixed bottom-20 left-4 right-4 z-50 max-w-lg mx-auto glass-card rounded-2xl overflow-hidden transition-all duration-300"
-          style={{
-            boxShadow: '0 12px 48px -12px rgba(0, 0, 0, 0.5), 0 0 30px rgba(212, 175, 55, 0.15)'
-          }}
-        >
-          {/* شريط التقدم */}
-          <div className="h-1 bg-white/10 cursor-pointer" onClick={(e) => {
-            if (duration <= 0) return;
-            const rect = e.currentTarget.getBoundingClientRect();
-            const percent = (e.clientX - rect.left) / rect.width;
-            onSeek(percent * duration);
-          }}>
+      {/* مشغل التلاوة المتحرك */}
+      <AnimatePresence>
+        {isPlaying && (
+          <motion.div
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            className="fixed bottom-24 left-4 right-4 z-50 mx-auto max-w-xl rounded-2xl border border-border/50 bg-card/95 backdrop-blur-xl shadow-2xl"
+          >
+            {/* شريط التقدم */}
             <div 
-              className="h-full bg-gradient-to-r from-[var(--gold)] to-[var(--gold-soft)] transition-all duration-100"
-              style={{ width: `${progressPercent}%` }}
-            />
-          </div>
-          
-          <div className="p-4">
-            {/* معلومات السورة */}
-            <div className="flex items-center justify-between mb-3">
-              <div>
-                <p className="text-sm font-bold text-white drop-shadow-md">{surahName || "التلاوة"}</p>
-                <p className="text-[10px] text-white/60">{reciterName}</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] tabular-nums text-white/50">{fmt(position)}</span>
-                <span className="text-[10px] text-white/30">/</span>
-                <span className="text-[10px] tabular-nums text-white/50">{fmt(duration)}</span>
-              </div>
-              <button
-                onClick={onMinimize}
-                className="flex size-8 items-center justify-center rounded-full bg-white/10 text-white/60 transition-colors hover:bg-white/20 hover:text-white"
-                aria-label="تصغير"
-              >
-                <ChevronDown className="size-4" />
-              </button>
+              className="h-1.5 cursor-pointer rounded-t-2xl bg-secondary/30"
+              onClick={(e) => {
+                if (duration <= 0) return;
+                const rect = e.currentTarget.getBoundingClientRect();
+                const percent = (e.clientX - rect.left) / rect.width;
+                seek(percent * duration);
+              }}
+            >
+              <motion.div 
+                className="h-full bg-gradient-to-r from-primary to-teal transition-all duration-100"
+                style={{ width: `${progressPercent}%` }}
+              />
             </div>
+            
+            <div className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <motion.div
+                    animate={{ rotate: isPlaying ? 360 : 0 }}
+                    transition={{ duration: 3, repeat: isPlaying ? Infinity : 0, ease: "linear" }}
+                    className="flex size-12 items-center justify-center rounded-xl bg-primary/10"
+                  >
+                    <ListMusic className="size-6 text-primary" />
+                  </motion.div>
+                  <div>
+                    <p className="text-sm font-bold">{surah.n}</p>
+                    <p className="text-xs text-muted-foreground">{reciter.name}</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <span className="tabular-nums">{fmt(position)}</span>
+                  <span>/</span>
+                  <span className="tabular-nums">{fmt(duration)}</span>
+                </div>
+              </div>
 
-            {/* أزرار التحكم */}
-            <div className="flex items-center justify-center gap-4">
-              <button
-                onClick={() => {
-                  haptic("soft");
-                  onSeek(Math.max(0, position - 10));
-                }}
-                className="soothing-btn flex size-11 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm hover:bg-white/25 active:scale-90"
-                aria-label="تراجع 10 ثوان"
-              >
-                <span className="text-xs font-bold">-10</span>
-              </button>
-              
-              <button
-                onClick={onToggleLoop}
-                className={cn(
-                  "soothing-btn flex size-11 items-center justify-center rounded-full backdrop-blur-sm transition-all active:scale-90",
-                  isLooping ? "bg-[var(--gold)] text-[#1a1a3a] shadow-[0_4px_20px_rgba(212,175,55,0.4)]" : "bg-white/15 text-white hover:bg-white/25"
-                )}
-                aria-label="تكرار"
-              >
-                <Repeat className="size-5" />
-              </button>
-              
-              <button
-                onClick={onToggle}
-                className="soothing-btn flex size-16 items-center justify-center rounded-full bg-gradient-to-br from-[var(--gold)] to-[var(--gold-soft)] text-[#1a1a3a] shadow-[0_8px_30px_rgba(212,175,55,0.5)] active:scale-90 transition-transform"
-                aria-label={isPlaying ? "إيقاف" : "تشغيل"}
-              >
-                {buffering ? (
-                  <Loader2 className="size-7 animate-spin" />
-                ) : isPlaying ? (
-                  <Pause className="size-7" />
-                ) : (
-                  <Play className="size-7 mr-1" />
-                )}
-              </button>
-              
-              <button
-                onClick={() => {
-                  haptic("soft");
-                  onSeek(Math.min(duration, position + 10));
-                }}
-                className="soothing-btn flex size-11 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm hover:bg-white/25 active:scale-90"
-                aria-label="تقديم 10 ثوان"
-              >
-                <span className="text-xs font-bold">+10</span>
-              </button>
+              {/* أزرار التحكم */}
+              <div className="flex items-center justify-center gap-4">
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => skip(-10)}
+                  className="flex size-10 items-center justify-center rounded-full bg-secondary text-muted-foreground hover:bg-secondary/80"
+                  aria-label="تراجع 10 ثوان"
+                >
+                  <span className="text-xs font-bold">-10</span>
+                </motion.button>
+                
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={toggleLoop}
+                  className={cn(
+                    "flex size-10 items-center justify-center rounded-full transition-all",
+                    isLooping ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:bg-secondary/80"
+                  )}
+                  aria-label="تكرار"
+                >
+                  <Repeat className="size-4" />
+                </motion.button>
+                
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={toggle}
+                  className="flex size-16 items-center justify-center rounded-full bg-gradient-to-br from-primary to-teal text-primary-foreground shadow-lg"
+                  aria-label={isPlaying ? "إيقاف" : "تشغيل"}
+                >
+                  {buffering ? (
+                    <Loader2 className="size-7 animate-spin" />
+                  ) : isPlaying ? (
+                    <Pause className="size-7" />
+                  ) : (
+                    <Play className="size-7 mr-1" />
+                  )}
+                </motion.button>
+                
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => skip(10)}
+                  className="flex size-10 items-center justify-center rounded-full bg-secondary text-muted-foreground hover:bg-secondary/80"
+                  aria-label="تقديم 10 ثوان"
+                >
+                  <span className="text-xs font-bold">+10</span>
+                </motion.button>
+                
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={toggleMute}
+                  className="flex size-10 items-center justify-center rounded-full bg-secondary text-muted-foreground hover:bg-secondary/80"
+                  aria-label={isMuted ? "تشغيل الصوت" : "كتم الصوت"}
+                >
+                  {isMuted ? <VolumeX className="size-4" /> : <Volume2 className="size-4" />}
+                </motion.button>
+              </div>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* زر التشغيل السريع */}
+      {!isPlaying && (
+        <motion.button
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={playSurah}
+          disabled={!online}
+          className={cn(
+            "fixed bottom-24 left-4 right-4 z-50 mx-auto flex max-w-xl items-center justify-center gap-3 rounded-2xl py-4 font-medium shadow-lg transition-all",
+            online 
+              ? "bg-gradient-to-r from-primary to-teal text-primary-foreground" 
+              : "bg-secondary text-muted-foreground cursor-not-allowed"
+          )}
+        >
+          {buffering ? (
+            <Loader2 className="size-5 animate-spin" />
+          ) : (
+            <Play className="size-5" />
+          )}
+          <span>{online ? "تشغيل التلاوة" : "متصل بالإنترنت للتشغيل"}</span>
+        </motion.button>
       )}
-    </>
+    </div>
   );
 }
