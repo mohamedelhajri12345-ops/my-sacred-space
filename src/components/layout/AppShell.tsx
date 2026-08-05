@@ -1,6 +1,6 @@
 import { useState, useEffect, type ReactNode } from "react";
-import { Link, useRouterState } from "@tanstack/react-router";
-import { Moon, Sun, Settings2, WifiOff, BookOpen } from "lucide-react";
+import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
+import { Moon, Sun, Settings2, WifiOff, BookOpen, ArrowRight } from "lucide-react";
 import { useApp } from "@/lib/app-context";
 import { formatHijri } from "@/lib/hijri";
 import { haptic } from "@/lib/haptics";
@@ -15,14 +15,20 @@ export function AppShell({
   children,
   title,
   subtitle,
+  showBack = true,
 }: {
   children: ReactNode;
   title?: string;
   subtitle?: string;
+  showBack?: boolean;
 }) {
   const { settings, updateSettings, online } = useApp();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const navigate = useNavigate();
   const [readingMode, setReadingMode] = useLocalStorage<boolean>(READING_MODE_KEY, false);
+  
+  // تحديد إذا كان يجب إظهار زر الرجوع (ليس في الصفحة الرئيسية)
+  const isHomePage = pathname === "/" || pathname === "";
 
   // تطبيق وضع القراءة على الجسم
   useEffect(() => {
@@ -55,6 +61,19 @@ export function AppShell({
       }}>
         <div className="mx-auto flex max-w-xl items-center justify-between gap-3 px-4 py-3">
           <div className="flex min-w-0 items-center gap-2.5">
+            {/* زر الرجوع */}
+            {showBack && !isHomePage && (
+              <button
+                onClick={() => {
+                  haptic("soft");
+                  void navigate(-1);
+                }}
+                aria-label="الرجوع"
+                className="soothing-btn flex size-9 items-center justify-center rounded-xl bg-white/15 text-white backdrop-blur-sm hover:bg-white/25 transition-colors"
+              >
+                <ArrowRight className="size-4" />
+              </button>
+            )}
             <span className="gradient-gold flex size-9 shrink-0 items-center justify-center rounded-xl text-gold-foreground shadow-[0_4px_12px_rgba(212,175,55,0.3)]">
               <PrayingPerson className="size-6" />
             </span>

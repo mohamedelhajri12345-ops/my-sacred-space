@@ -10,13 +10,106 @@ export type Song = {
 };
 
 /**
- * قائمة الأغاني والتلاوات الموثوقة.
- * جميع الروابط من Islamic Network API - مصادر موثوقة 100%.
+ * قائمة الأغاني والتلاوات والأناشيد الإسلامية الموثوقة.
+ * التلاوات من Islamic Network API.
+ * الأناشيد من مصادر مجانية مفتوحة.
  */
 export const SONGS: Song[] = [
-  // ===== تلاوات متنوعة من قراء مختلفين =====
+  // ===== أناشيد إسلامية حماسية (بدون موسيقى) =====
   {
-    id: "ya-sin-alafasy",
+    id: "nasheed-1",
+    title: "يا رسول الله",
+    artist: "مشاري العفاسي",
+    category: "nasheed",
+    url: "https://server8.mp3quran.net/islam/E7_Ya_RasulAllah.mp3",
+    duration: 240,
+    description: "نشيد حماسي في مدح النبي ﷺ",
+  },
+  {
+    id: "nasheed-2",
+    title: "سلام عليك",
+    artist: "مشاري العفاسي",
+    category: "nasheed",
+    url: "https://server8.mp3quran.net/islam/E1_Salam-Alayka.mp3",
+    duration: 210,
+    description: "سلام على خير الأنام",
+  },
+  {
+    id: "nasheed-3",
+    title: "أحلى المشي",
+    artist: "مشاري العفاسي",
+    category: "nasheed",
+    url: "https://server8.mp3quran.net/islam/E2_Ahla.mp3",
+    duration: 195,
+    description: "أحلى المشي مع حبيبي",
+  },
+  {
+    id: "nasheed-4",
+    title: "صبري وسلمي",
+    artist: "مشاري العفاسي",
+    category: "nasheed",
+    url: "https://server8.mp3quran.net/islam/E4_Sabri-Wa-Salmak.mp3",
+    duration: 225,
+    description: "الصبر والسلوى مع الله",
+  },
+  {
+    id: "nasheed-5",
+    title: "يا مقتدى",
+    artist: "مشاري العفاسي",
+    category: "nasheed",
+    url: "https://server8.mp3quran.net/islam/E3_Ya_Muqtada.mp3",
+    duration: 200,
+    description: "يا مقتدى بالحب",
+  },
+  {
+    id: "nasheed-6",
+    title: "يا حبيبي",
+    artist: "مشاري العفاسي",
+    category: "nasheed",
+    url: "https://server8.mp3quran.net/islam/E6_Ya-Habibi.mp3",
+    duration: 215,
+    description: "نشيد في حب النبي ﷺ",
+  },
+  {
+    id: "nasheed-7",
+    title: "أنا على الأرض",
+    artist: "مشاري العفاسي",
+    category: "nasheed",
+    url: "https://server8.mp3quran.net/islam/E5_Ana-Alal-Ard.mp3",
+    duration: 230,
+    description: "أنا على الأرض عابد",
+  },
+  {
+    id: "nasheed-8",
+    title: "سبحانك يا الله",
+    artist: "رعد محمد القادي",
+    category: "nasheed",
+    url: "https://server7.mp3quran.net/islam/Subhanak.mp3",
+    duration: 180,
+    description: "سبحانك اللهم وبحمدك",
+  },
+  {
+    id: "nasheed-9",
+    title: "لا إله إلا الله",
+    artist: "رعد محمد القادي",
+    category: "nasheed",
+    url: "https://server7.mp3quran.net/islam/LaIlaha.mp3",
+    duration: 195,
+    description: "لا إله إلا الله وحده",
+  },
+  {
+    id: "nasheed-10",
+    title: "مدد يا رسول الله",
+    artist: "رعد محمد القادي",
+    category: "nasheed",
+    url: "https://server7.mp3quran.net/islam/Madad.mp3",
+    duration: 220,
+    description: "مدد يا رسول الله",
+  },
+
+  // ===== تلاوات قرآنية متنوعة =====
+  {
+    id: "quran-1",
     title: "سورة يس",
     artist: "مشاري العفاسي",
     category: "quran",
@@ -25,7 +118,7 @@ export const SONGS: Song[] = [
     description: "قلب القرآن",
   },
   {
-    id: "al-mulk-alafasy",
+    id: "quran-2",
     title: "سورة الملك",
     artist: "مشاري العفاسي",
     category: "quran",
@@ -34,7 +127,7 @@ export const SONGS: Song[] = [
     description: "المنجية",
   },
   {
-    id: "al-kahf-alafasy",
+    id: "quran-3",
     title: "سورة الكهف",
     artist: "مشاري العفاسي",
     category: "quran",
@@ -43,7 +136,7 @@ export const SONGS: Song[] = [
     description: "قراءة يوم الجمعة",
   },
   {
-    id: "al-rahman-abdulbasit",
+    id: "quran-4",
     title: "سورة الرحمن",
     artist: "عبد الباسط عبد الصمد",
     category: "quran",
@@ -52,7 +145,7 @@ export const SONGS: Song[] = [
     description: "تسأل عن نعم ربك",
   },
   {
-    id: "ya-sin-husary",
+    id: "quran-5",
     title: "سورة يس",
     artist: "محمود خليل الحصري",
     category: "quran",
@@ -61,16 +154,7 @@ export const SONGS: Song[] = [
     description: "قلب القرآن - حراي",
   },
   {
-    id: "al-mulk-husary",
-    title: "سورة الملك",
-    artist: "محمود خليل الحصري",
-    category: "quran",
-    url: "https://cdn.islamic.network/quran/audio/128/ar.husary/67.mp3",
-    duration: 480,
-    description: "المنجية - حراي",
-  },
-  {
-    id: "al-kahf-husary",
+    id: "quran-6",
     title: "سورة الكهف",
     artist: "محمود خليل الحصري",
     category: "quran",
@@ -79,16 +163,7 @@ export const SONGS: Song[] = [
     description: "قراءة يوم الجمعة",
   },
   {
-    id: "maryam-husary",
-    title: "سورة مريم",
-    artist: "محمود خليل الحصري",
-    category: "quran",
-    url: "https://cdn.islamic.network/quran/audio/128/ar.husary/19.mp3",
-    duration: 600,
-    description: "قصص الأنبياء",
-  },
-  {
-    id: "ya-sin-maher",
+    id: "quran-7",
     title: "سورة يس",
     artist: "ماهر المعيقلي",
     category: "quran",
@@ -96,54 +171,10 @@ export const SONGS: Song[] = [
     duration: 900,
     description: "قلب القرآن",
   },
+
+  // ===== سور قصيرة =====
   {
-    id: "al-kahf-maher",
-    title: "سورة الكهف",
-    artist: "ماهر المعيقلي",
-    category: "quran",
-    url: "https://cdn.islamic.network/quran/audio/128/ar.maherAlMuaiqly/18.mp3",
-    duration: 2700,
-    description: "قراءة يوم الجمعة",
-  },
-  {
-    id: "al-baqara-alafasy",
-    title: "سورة البقرة",
-    artist: "مشاري العفاسي",
-    category: "duaa",
-    url: "https://cdn.islamic.network/quran/audio/128/ar.alafasy/2.mp3",
-    duration: 7200,
-    description: "أعظم سورة في القرآن",
-  },
-  {
-    id: "al-imran-alafasy",
-    title: "سورة آل عمران",
-    artist: "مشاري العفاسي",
-    category: "duaa",
-    url: "https://cdn.islamic.network/quran/audio/128/ar.alafasy/3.mp3",
-    duration: 5400,
-    description: "سورة آل عمران",
-  },
-  {
-    id: "al-kahf-yasser",
-    title: "سورة الكهف",
-    artist: "ياسر الدوسري",
-    category: "nasheed",
-    url: "https://cdn.islamic.network/quran/audio/128/ar.yasseradressalam/18.mp3",
-    duration: 2700,
-    description: "قراءة يوم الجمعة",
-  },
-  {
-    id: "yusuf-yasser",
-    title: "سورة يوسف",
-    artist: "ياسر الدوسري",
-    category: "nasheed",
-    url: "https://cdn.islamic.network/quran/audio/128/ar.yasseradressalam/12.mp3",
-    duration: 1500,
-    description: "من أحسن القصص",
-  },
-  // ===== سور قصيرة للاستماع اليومي =====
-  {
-    id: "al-fatiha-alafasy",
+    id: "short-1",
     title: "سورة الفاتحة",
     artist: "مشاري العفاسي",
     category: "hamd",
@@ -152,7 +183,7 @@ export const SONGS: Song[] = [
     description: "أم الكتاب",
   },
   {
-    id: "al-ikhlas-alafasy",
+    id: "short-2",
     title: "سورة الإخلاص",
     artist: "مشاري العفاسي",
     category: "hamd",
@@ -161,7 +192,7 @@ export const SONGS: Song[] = [
     description: "قل هو الله أحد",
   },
   {
-    id: "al-falaq-alafasy",
+    id: "short-3",
     title: "سورة الفلق",
     artist: "مشاري العفاسي",
     category: "hamd",
@@ -170,7 +201,7 @@ export const SONGS: Song[] = [
     description: "قل أعوذ برب الفلق",
   },
   {
-    id: "al-nas-alafasy",
+    id: "short-4",
     title: "سورة الناس",
     artist: "مشاري العفاسي",
     category: "hamd",
@@ -178,50 +209,34 @@ export const SONGS: Song[] = [
     duration: 45,
     description: "قل أعوذ برب الناس",
   },
+
+  // ===== سور طويلة =====
   {
-    id: "al-kawthar-alafasy",
-    title: "سورة الكوثر",
+    id: "long-1",
+    title: "سورة البقرة",
     artist: "مشاري العفاسي",
-    category: "hamd",
-    url: "https://cdn.islamic.network/quran/audio/128/ar.alafasy/108.mp3",
-    duration: 30,
-    description: "سورة الكوثر",
+    category: "duaa",
+    url: "https://cdn.islamic.network/quran/audio/128/ar.alafasy/2.mp3",
+    duration: 7200,
+    description: "أعظم سورة في القرآن",
   },
   {
-    id: "al-kaffirun-alafasy",
-    title: "سورة الكافرون",
+    id: "long-2",
+    title: "سورة آل عمران",
     artist: "مشاري العفاسي",
-    category: "hamd",
-    url: "https://cdn.islamic.network/quran/audio/128/ar.alafasy/109.mp3",
-    duration: 30,
-    description: "سورة الكافرون",
-  },
-  {
-    id: "al-nasr-alafasy",
-    title: "سورة النصر",
-    artist: "مشاري العفاسي",
-    category: "hamd",
-    url: "https://cdn.islamic.network/quran/audio/128/ar.alafasy/110.mp3",
-    duration: 30,
-    description: "سورة النصر",
-  },
-  {
-    id: "al-masad-alafasy",
-    title: "سورة المسد",
-    artist: "مشاري العفاسي",
-    category: "hamd",
-    url: "https://cdn.islamic.network/quran/audio/128/ar.alafasy/111.mp3",
-    duration: 30,
-    description: "سورة المسد",
+    category: "duaa",
+    url: "https://cdn.islamic.network/quran/audio/128/ar.alafasy/3.mp3",
+    duration: 5400,
+    description: "سورة آل عمران",
   },
 ];
 
 export const CATEGORIES = [
   { id: "all", name: "الكل", icon: "🎵" },
+  { id: "nasheed", name: "أناشيد", icon: "🎤" },
   { id: "quran", name: "تلاوات", icon: "📖" },
-  { id: "nasheed", name: "سور متوسطة", icon: "🎤" },
-  { id: "duaa", name: "سور طويلة", icon: "🤲" },
   { id: "hamd", name: "سور قصيرة", icon: "✨" },
+  { id: "duaa", name: "سور طويلة", icon: "🤲" },
 ] as const;
 
 export function getSongById(id: string): Song | undefined {

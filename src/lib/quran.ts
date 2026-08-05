@@ -90,11 +90,11 @@ export type Reciter = {
  * يعمل بشكل موثوق على جميع الأجهزة.
  */
 export const RECITERS: Reciter[] = [
-  { id: "ar.alafasy", name: "مشاري راشد العفاسي", apiIdentifier: "ar.alafasy" },
+  { id: "ar.alafasy", name: "مشاري العفاسي", apiIdentifier: "ar.alafasy" },
   { id: "ar.mahermuaiqly", name: "ماهر المعيقلي", apiIdentifier: "ar.maherAlMuaiqly" },
   { id: "ar.husary", name: "محمود خليل الحصري", apiIdentifier: "ar.husary" },
   { id: "ar.abdulbasitmurattal", name: "عبد الباسط عبد الصمد", apiIdentifier: "ar.abdulbasit" },
-  { id: "ar.minshawi", name: "محمد صديق المنشاوي", apiIdentifier: "ar.minshawimurattal" },
+  { id: "ar.minshawi", name: "محمد المنشاوي", apiIdentifier: "ar.minshawimurattal" },
   { id: "ar.yasserdossari", name: "ياسر الدوسري", apiIdentifier: "ar.yasseradressalam" },
 ];
 
