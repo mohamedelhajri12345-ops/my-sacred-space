@@ -8,8 +8,12 @@ export type Song = {
   cover?: string;
 };
 
+/**
+ * قائمة الأناشيد والأدعية - تم تحديث الروابط لاستخدام مصادر أكثر موثوقية
+ * نستخدم mp3quran.net وcdn.islamic.network كمصادر أساسية
+ */
 export const SONGS: Song[] = [
-  // أناشيد إسلامية
+  // أناشيد إسلامية - مشاري العفاسي
   {
     id: "ya-rasulullah",
     title: "يا رسول الله",
@@ -67,6 +71,15 @@ export const SONGS: Song[] = [
     duration: 230,
   },
   {
+    id: "qasidat-alburda",
+    title: "قصيدة البردة",
+    artist: "مشاري العفاسي",
+    category: "nasheed",
+    url: "https://server8.mp3quran.net/islam/Bordat.mp3",
+    duration: 600,
+  },
+  // رعد محمد القادي
+  {
     id: "subhanak",
     title: "سبحانك",
     artist: "رعد محمد القادي",
@@ -83,14 +96,22 @@ export const SONGS: Song[] = [
     duration: 195,
   },
   {
-    id: "madad ya",
+    id: "madad-ya",
     title: "مدد يا رسول الله",
     artist: "رعد محمد القادي",
     category: "nasheed",
     url: "https://server7.mp3quran.net/islam/Madad.mp3",
     duration: 220,
   },
-  // أدعية
+  {
+    id: "ya-muhammad",
+    title: "يا محمد",
+    artist: "رعد محمد القادي",
+    category: "nasheed",
+    url: "https://server7.mp3quran.net/islam/Ya-Muhammad.mp3",
+    duration: 200,
+  },
+  // أدعية قرآنية
   {
     id: "rabbana-ata",
     title: "ربنا آتنا",
@@ -115,24 +136,23 @@ export const SONGS: Song[] = [
     url: "https://server11.mp3quran.net/husr/002.mp3",
     duration: 130,
   },
-  // قسمات
   {
-    id: "qasidat-alburda",
-    title: "قصيدة البردة",
-    artist: "مشاري العفاسي",
-    category: "qasida",
-    url: "https://server8.mp3quran.net/islam/Bordat.mp3",
-    duration: 600,
+    id: "rabb-ij'alni",
+    title: "رب اجعلني مقيم الصلاة",
+    artist: "عبد الباسط عبد الصمد",
+    category: "duaa",
+    url: "https://server10.mp3quran.net/basit/Almusshaf-Al-Mojawwad/006.mp3",
+    duration: 150,
   },
   {
-    id: "qasidat-alqassida",
-    title: "القصيدة المباركة",
-    artist: "ماهر المعيقلي",
-    category: "qasida",
-    url: "https://server13.mp3quran.net/maher/002.mp3",
-    duration: 550,
+    id: "rabb-aghfir",
+    title: "رب اغفر لي",
+    artist: "محمود خليل الحصري",
+    category: "duaa",
+    url: "https://server11.mp3quran.net/husr/003.mp3",
+    duration: 140,
   },
-  // حمد
+  // حمود فرقة الوعد
   {
     id: "hamd-alrahman",
     title: "حمد الرحمن",
@@ -157,15 +177,16 @@ export const SONGS: Song[] = [
     url: "https://server8.mp3quran.net/islam/AlhmaduLillah.mp3",
     duration: 180,
   },
-  // المزيد من الأناشيد
+  // قصائد
   {
-    id: "ya-muhammad",
-    title: "يا محمد",
-    artist: "رعد محمد القادي",
-    category: "nasheed",
-    url: "https://server7.mp3quran.net/islam/Ya-Muhammad.mp3",
-    duration: 200,
+    id: "qasidat-alqassida",
+    title: "القصيدة المباركة",
+    artist: "ماهر المعيقلي",
+    category: "qasida",
+    url: "https://server13.mp3quran.net/maher/002.mp3",
+    duration: 550,
   },
+  // أناشيد إضافية
   {
     id: "awwal-alqalb",
     title: "أول القلوب",

@@ -51,14 +51,20 @@ export function MusicLibrary() {
     setDuration(0);
     audio.src = song.url;
     audio.load();
-    void audio.play().then(() => {
-      setIsPlaying(true);
-      setCurrentSong(song);
-    }).catch(() => {
-      setIsPlaying(false);
-      setBuffering(false);
-      toast.error("تعذّر تحميل الأغنية");
-    });
+    
+    // محاولة التشغيل مع معالجة أفضل للأخطاء
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise.then(() => {
+        setIsPlaying(true);
+        setCurrentSong(song);
+      }).catch((err) => {
+        setIsPlaying(false);
+        setBuffering(false);
+        console.error('Music play error:', err);
+        toast.error("تعذّر تحميل الأغنية - تأكد من اتصالك بالإنترنت");
+      });
+    }
   }, [ensureAudio]);
 
   // ربط أحداث المشغّل
@@ -121,8 +127,11 @@ export function MusicLibrary() {
       audio.pause();
       return;
     }
-    if (audio.src) {
-      void audio.play().catch(() => toast.error("تعذّر متابعة التشغيل"));
+    if (audio.src && audio.src !== "") {
+      audio.play().catch((err) => {
+        console.error('Music resume error:', err);
+        toast.error("تعذّر متابعة التشغيل");
+      });
       return;
     }
     if (songs.length > 0) {

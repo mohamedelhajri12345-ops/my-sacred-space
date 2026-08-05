@@ -14,6 +14,7 @@ import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as FastingRouteImport } from './routes/fasting'
 import { Route as JournalRouteImport } from './routes/journal'
 import { Route as KhatmahRouteImport } from './routes/khatmah'
+import { Route as LibraryRouteImport } from './routes/library'
 import { Route as LocationRouteImport } from './routes/location'
 import { Route as PrayerRouteImport } from './routes/prayer'
 import { Route as QiblaRouteImport } from './routes/qibla'
@@ -48,6 +49,11 @@ const JournalRoute = JournalRouteImport.update({
 const KhatmahRoute = KhatmahRouteImport.update({
   id: '/khatmah',
   path: '/khatmah',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LibraryRoute = LibraryRouteImport.update({
+  id: '/library',
+  path: '/library',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LocationRoute = LocationRouteImport.update({
@@ -107,6 +113,7 @@ export interface FileRoutesByFullPath {
   '/fasting': typeof FastingRoute
   '/journal': typeof JournalRoute
   '/khatmah': typeof KhatmahRoute
+  '/library': typeof LibraryRoute
   '/location': typeof LocationRoute
   '/prayer': typeof PrayerRoute
   '/qibla': typeof QiblaRoute
@@ -124,6 +131,7 @@ export interface FileRoutesByTo {
   '/fasting': typeof FastingRoute
   '/journal': typeof JournalRoute
   '/khatmah': typeof KhatmahRoute
+  '/library': typeof LibraryRoute
   '/location': typeof LocationRoute
   '/prayer': typeof PrayerRoute
   '/qibla': typeof QiblaRoute
@@ -142,6 +150,7 @@ export interface FileRoutesById {
   '/fasting': typeof FastingRoute
   '/journal': typeof JournalRoute
   '/khatmah': typeof KhatmahRoute
+  '/library': typeof LibraryRoute
   '/location': typeof LocationRoute
   '/prayer': typeof PrayerRoute
   '/qibla': typeof QiblaRoute
@@ -161,6 +170,7 @@ export interface FileRouteTypes {
     | '/fasting'
     | '/journal'
     | '/khatmah'
+    | '/library'
     | '/location'
     | '/prayer'
     | '/qibla'
@@ -178,6 +188,7 @@ export interface FileRouteTypes {
     | '/fasting'
     | '/journal'
     | '/khatmah'
+    | '/library'
     | '/location'
     | '/prayer'
     | '/qibla'
@@ -195,6 +206,7 @@ export interface FileRouteTypes {
     | '/fasting'
     | '/journal'
     | '/khatmah'
+    | '/library'
     | '/location'
     | '/prayer'
     | '/qibla'
@@ -213,6 +225,7 @@ export interface RootRouteChildren {
   FastingRoute: typeof FastingRoute
   JournalRoute: typeof JournalRoute
   KhatmahRoute: typeof KhatmahRoute
+  LibraryRoute: typeof LibraryRoute
   LocationRoute: typeof LocationRoute
   PrayerRoute: typeof PrayerRoute
   QiblaRoute: typeof QiblaRoute
@@ -260,6 +273,13 @@ declare module '@tanstack/react-router' {
       path: '/khatmah'
       fullPath: '/khatmah'
       preLoaderRoute: typeof KhatmahRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/library': {
+      id: '/library'
+      path: '/library'
+      fullPath: '/library'
+      preLoaderRoute: typeof LibraryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/location': {
@@ -341,6 +361,7 @@ const rootRouteChildren: RootRouteChildren = {
   FastingRoute: FastingRoute,
   JournalRoute: JournalRoute,
   KhatmahRoute: KhatmahRoute,
+  LibraryRoute: LibraryRoute,
   LocationRoute: LocationRoute,
   PrayerRoute: PrayerRoute,
   QiblaRoute: QiblaRoute,

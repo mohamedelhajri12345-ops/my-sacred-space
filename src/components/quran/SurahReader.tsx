@@ -78,19 +78,25 @@ export function SurahReader({
     setDuration(0);
     audio.src = src;
     audio.load();
-    void audio.play().then(() => {
-      setIsPlaying(true);
-      markRead(surah.c);
-    }).catch((err: unknown) => {
-      setIsPlaying(false);
-      setBuffering(false);
-      const name = err instanceof Error ? err.name : "";
-      toast.error(
-        name === "NotAllowedError"
-          ? "اضغط زر التشغيل مرة أخرى للسماح بتشغيل الصوت"
-          : "تعذّر تحميل ملف التلاوة، تحقّق من الاتصال أو جرّب قارئًا آخر",
-      );
-    });
+    
+    // محاولة التشغيل مع معالجة أفضل للأخطاء
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise.then(() => {
+        setIsPlaying(true);
+        markRead(surah.c);
+      }).catch((err: unknown) => {
+        setIsPlaying(false);
+        setBuffering(false);
+        console.error('Audio play error:', err);
+        const name = err instanceof Error ? err.name : "";
+        if (name === "NotAllowedError") {
+          toast.error("اضغط زر التشغيل مرة أخرى للسماح بتشغيل الصوت");
+        } else {
+          toast.error("تعذّر تحميل ملف التلاوة، تحقّق من الاتصال أو جرّب قارئًا آخر");
+        }
+      });
+    }
   }, [ensureAudio, markRead, online, settings.reciter, surah, surahId]);
 
   // ربط أحداث المشغّل
@@ -153,8 +159,11 @@ export function SurahReader({
       audio.pause();
       return;
     }
-    if (audio.src && !isPlaying) {
-      void audio.play().catch(() => toast.error("تعذّر متابعة التشغيل"));
+    if (audio.src && audio.src !== "") {
+      audio.play().catch((err) => {
+        console.error('Resume playback error:', err);
+        toast.error("تعذّر متابعة التشغيل");
+      });
       return;
     }
     playSurah();

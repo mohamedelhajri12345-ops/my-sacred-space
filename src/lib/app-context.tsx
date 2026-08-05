@@ -150,7 +150,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
     setLocating(true);
     setLocationError(null);
+    
     try {
+      // محاولة GPS أولاً
       const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
         navigator.geolocation.getCurrentPosition(resolve, reject, {
           enableHighAccuracy: true,
@@ -164,7 +166,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         ? info.country
           ? `${info.city}، ${info.country}`
           : info.city
-        : "موقعي الحالي";
+        : "موقعي الحالي (GPS)";
       setCoordsState({ latitude, longitude, label });
       setPlace(info);
       const suggested = methodForCountry(info?.countryCode);
@@ -172,7 +174,55 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setSettings((prev) => (prev.autoMethod ? { ...prev, method: suggested } : prev));
       }
     } catch {
-      setLocationError("لم نتمكن من قراءة موقعك، سنستخدم آخر موقع محفوظ ويمكنك التغيير يدويًا");
+      // إذا فشل GPS، استخدم API بديل عبر IP
+      try {
+        setLocationError("لم نتمكن من استخدام GPS، جاري تحديد الموقع عبر عنوان الإنترنت...");
+        const response = await fetch('https://ipapi.co/json/', { 
+          headers: { 'Accept': 'application/json' },
+          mode: 'cors'
+        });
+        
+        if (response.ok) {
+          const data = await response.json() as {
+            latitude?: number;
+            longitude?: number;
+            city?: string;
+            country_name?: string;
+            country_code?: string;
+            timezone?: string;
+          };
+          
+          if (data.latitude && data.longitude) {
+            const info = {
+              city: data.city,
+              country: data.country_name,
+              countryCode: data.country_code?.toUpperCase(),
+              timezone: data.timezone,
+            };
+            
+            const label = data.city
+              ? `${data.city}، ${data.country_name}`
+              : "موقعي الحالي (IP)";
+              
+            setCoordsState({ latitude: data.latitude, longitude: data.longitude, label });
+            setPlace(info);
+            
+            const suggested = methodForCountry(data.country_code);
+            if (suggested) {
+              setSettings((prev) => (prev.autoMethod ? { ...prev, method: suggested } : prev));
+            }
+            
+            toast.success("تم تحديد موقعك بنجاح");
+            setLocationError(null);
+            setLocating(false);
+            return;
+          }
+        }
+      } catch {
+        // تجاهل خطأ IP API
+      }
+      
+      setLocationError("لم نتمكن من قراءة موقعك، يمكنك اختيار المدينة يدويًا من الإعدادات");
     } finally {
       setLocating(false);
     }
