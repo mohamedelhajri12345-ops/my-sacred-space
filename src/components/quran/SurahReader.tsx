@@ -81,6 +81,10 @@ export function SurahReader({
    * تشغيل موحّد بلا تقطّع: عنصرا صوت بالتناوب، يُحمّل الثاني الآية التالية
    * أثناء تلاوة الأولى فينتقل التشغيل فورًا دون فراغ زمني.
    */
+  const audioPairRef = useRef<[HTMLAudioElement, HTMLAudioElement] | null>(null);
+  const activeIdx = useRef<0 | 1>(0);
+  const preloadedRef = useRef<number | null>(null);
+
   const ensureAudios = useCallback(() => {
     if (audioPairRef.current) return audioPairRef.current;
     const pair: [HTMLAudioElement, HTMLAudioElement] = [new Audio(), new Audio()];
