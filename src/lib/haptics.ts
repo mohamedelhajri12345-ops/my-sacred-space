@@ -1,4 +1,4 @@
-type Pattern = "light" | "medium" | "heavy" | "success" | "warn" | "selection" | "tap";
+type Pattern = "light" | "medium" | "heavy" | "success" | "warn" | "selection" | "tap" | "soft";
 
 const PATTERNS: Record<Pattern, number | number[]> = {
   light: 10,
@@ -8,6 +8,7 @@ const PATTERNS: Record<Pattern, number | number[]> = {
   warn: [30, 60, 30],
   selection: 5,
   tap: 8,
+  soft: 5,
 };
 
 /**

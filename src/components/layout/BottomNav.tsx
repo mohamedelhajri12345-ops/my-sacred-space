@@ -40,8 +40,8 @@ export function BottomNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-card/85 backdrop-blur-xl glass-panel">
-      <ul className="mx-auto flex max-w-xl items-stretch justify-between px-2 pb-[env(safe-area-inset-bottom)]">
+    <nav className="fixed inset-x-0 bottom-0 z-40 mx-4 mb-4 rounded-2xl glass-card" style={{ boxShadow: '0 -4px 30px rgba(0, 0, 0, 0.3)' }}>
+      <ul className="mx-auto flex max-w-xl items-stretch justify-between px-2 py-2">
         {ITEMS.map((item) => {
           const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
           const Icon = item.icon;
@@ -49,16 +49,17 @@ export function BottomNav() {
             <li key={item.to} className="flex-1">
               <Link
                 to={item.to}
-                onClick={() => haptic("light")}
+                onClick={() => haptic("soft")}
                 className={cn(
-                  "press flex flex-col items-center gap-1 rounded-2xl px-2 py-2.5 text-[11px] font-medium transition-all duration-300",
-                  active ? "text-primary" : "text-muted-foreground",
+                  "soothing-btn flex flex-col items-center gap-1 rounded-2xl px-2 py-2.5 text-[11px] font-medium transition-all duration-300",
+                  active ? "text-[var(--gold)]" : "text-white/60",
                 )}
               >
                 <span
                   className={cn(
                     "flex size-9 items-center justify-center rounded-xl transition-all duration-300",
-                    active && "gradient-gold text-gold-foreground shadow-[var(--shadow-glow)]",
+                    active && "bg-[var(--gold)]/30 text-[var(--gold)]",
+                    !active && "text-white/60",
                   )}
                 >
                   <Icon className="size-[18px]" />

@@ -76,19 +76,19 @@ export function toArabicNumber(n: number) {
 export type Bookmark = { surah: number; ayah: number; surahName: string; text: string; at: number };
 export type ReadingProgress = { surah: number; ayah: number; readAyahs: number; updatedAt: number };
 
-export type Reciter = { id: string; name: string; dir: string };
+export type Reciter = { id: string; name: string; dir: string; mp3quranDir: string };
 
 /**
  * مصادر التلاوة من everyayah.com (ملف mp3 لكل آية، بترقيم سورة/آية).
  * تم التحقق من توفّر كل مجلد.
  */
 export const RECITERS: Reciter[] = [
-  { id: "ar.alafasy", name: "مشاري راشد العفاسي", dir: "Alafasy_128kbps" },
-  { id: "ar.mahermuaiqly", name: "ماهر المعيقلي", dir: "MaherAlMuaiqly128kbps" },
-  { id: "ar.yasserdossari", name: "ياسر الدوسري", dir: "Yasser_Ad-Dussary_128kbps" },
-  { id: "ar.abdulbasitmurattal", name: "عبد الباسط عبد الصمد", dir: "Abdul_Basit_Murattal_192kbps" },
-  { id: "ar.husary", name: "محمود خليل الحصري", dir: "Husary_128kbps" },
-  { id: "ar.minshawi", name: "محمد صديق المنشاوي", dir: "Minshawy_Murattal_128kbps" },
+  { id: "ar.alafasy", name: "مشاري راشد العفاسي", dir: "Alafasy_128kbps", mp3quranDir: "mishary_alafasy" },
+  { id: "ar.mahermuaiqly", name: "ماهر المعيقلي", dir: "MaherAlMuaiqly128kbps", mp3quranDir: "maher_almuaiqly" },
+  { id: "ar.yasserdossari", name: "ياسر الدوسري", dir: "Yasser_Ad-Dussary_128kbps", mp3quranDir: "yasser_ad_dussary" },
+  { id: "ar.abdulbasitmurattal", name: "عبد الباسط عبد الصمد", dir: "Abdul_Basit_Murattal_192kbps", mp3quranDir: "abdulbasit_murattal" },
+  { id: "ar.husary", name: "محمود خليل الحصري", dir: "Husary_128kbps", mp3quranDir: "husary" },
+  { id: "ar.minshawi", name: "محمد صديق المنشاوي", dir: "Minshawy_Murattal_128kbps", mp3quranDir: "minshawi" },
 ];
 
 const pad3 = (n: number) => String(n).padStart(3, "0");
@@ -101,6 +101,14 @@ export function getReciter(id: string): Reciter {
 export function ayahAudioUrl(reciterId: string, surah: number, ayah: number) {
   const r = getReciter(reciterId);
   return `https://everyayah.com/data/${r.dir}/${pad3(surah)}${pad3(ayah)}.mp3`;
+}
+
+/** رابط تلاوة سورة كاملة من mp3quran.net */
+export function surahAudioUrl(reciterId: string, surah: number) {
+  const r = getReciter(reciterId);
+  const padded = pad3(surah);
+  // استخدام server8 مباشرة للتأكد من العمل
+  return `https://server8.mp3quran.net/${r.mp3quranDir}/${padded}.mp3`;
 }
 
 /** Global ayah number (1-6236) needed by most recitation CDNs. */

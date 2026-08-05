@@ -5,13 +5,13 @@ import {
   Pause,
   Play,
   Repeat,
-  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
   getReciter,
   globalAyahNumber,
   loadQuran,
+  surahAudioUrl,
   toArabicNumber,
   type ReadingProgress,
 } from "@/lib/quran";
@@ -19,21 +19,6 @@ import { useLocalStorage } from "@/lib/use-local-storage";
 import { useApp } from "@/lib/app-context";
 import { haptic } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
-
-// Full surah audio URL from mp3quran.net
-export function surahAudioUrl(reciterId: string, surah: number) {
-  const padded = String(surah).padStart(3, "0");
-  const reciterMap: Record<string, string> = {
-    "ar.alafasy": "mishary_alafasy",
-    "ar.mahermuaiqly": "maher_almuaiqly",
-    "ar.yasserdossari": "yasser_ad-dussary",
-    "ar.abdulbasitmurattal": "abdulbasit_murattal",
-    "ar.husary": "husary",
-    "ar.minshawi": "minshawi_murattal",
-  };
-  const reciterFolder = reciterMap[reciterId] || reciterMap["ar.alafasy"];
-  return `https://server${Math.floor(Math.random() * 13) + 8}.mp3quran.net/${reciterFolder}/${padded}.mp3`;
-}
 
 export function SurahReader({
   surahId,
@@ -72,6 +57,7 @@ export function SurahReader({
     if (audioRef.current) return audioRef.current;
     const audio = new Audio();
     audio.preload = "auto";
+    audio.crossOrigin = "anonymous";
     audioRef.current = audio;
     return audio;
   }, []);
@@ -158,7 +144,7 @@ export function SurahReader({
   );
 
   const toggle = () => {
-    haptic("light");
+    haptic("soft");
     const audio = ensureAudio();
     if (isPlaying) {
       audio.pause();
@@ -171,11 +157,6 @@ export function SurahReader({
     playSurah();
   };
 
-  const closePlayer = () => {
-    ensureAudio().pause();
-    setIsPlaying(false);
-  };
-
   const seek = (value: number) => {
     const audio = ensureAudio();
     if (!Number.isFinite(audio.duration)) return;
@@ -184,15 +165,15 @@ export function SurahReader({
   };
 
   const toggleLoop = () => {
-    haptic("light");
+    haptic("soft");
     setIsLooping(!isLooping);
   };
 
   if (isLoading || !surah) {
     return (
-      <div className="flex flex-col items-center justify-center gap-3 py-20 text-muted-foreground">
-        <Loader2 className="size-6 animate-spin text-accent" />
-        <p className="text-sm">جارٍ تحميل المصحف…</p>
+      <div className="flex flex-col items-center justify-center gap-3 py-20 text-white/80">
+        <Loader2 className="size-8 animate-spin text-[var(--gold)]" />
+        <p className="text-sm text-white/70">جارٍ تحميل المصحف…</p>
       </div>
     );
   }
@@ -205,28 +186,28 @@ export function SurahReader({
   };
 
   return (
-    <div className="space-y-6 pb-40">
-      {/* Header */}
-      <div className="surface-card gradient-night p-6 text-center text-primary-foreground">
-        <p className="text-xs opacity-80">
+    <div className="min-h-screen">
+      {/* Header - شفاف مع نص أغمق */}
+      <div className="glass-card p-6 text-center mb-4">
+        <p className="text-xs text-white/60 mb-1">
           {surah.t === "meccan" ? "مكية" : "مدنية"} · {toArabicNumber(surah.c)} آية
         </p>
-        <h2 className="font-display text-4xl font-bold">سورة {surah.n}</h2>
+        <h2 className="font-display text-4xl font-bold text-white drop-shadow-lg">سورة {surah.n}</h2>
         {surahId !== 1 && surahId !== 9 && (
-          <p className="quran-text mt-3 text-[1.4rem] text-primary-foreground">
+          <p className="quran-text mt-3 text-[1.4rem] text-[var(--gold)] drop-shadow-sm">
             بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
           </p>
         )}
-        <p className="mt-2 text-xs opacity-70">القارئ: {reciter.name}</p>
+        <p className="mt-2 text-xs text-white/50">القارئ: {reciter.name}</p>
       </div>
 
-      {/* القرآن المتصل - الآيات مدمجة كسورة واحدة */}
-      <div className="surface-card p-6">
-        <p className="quran-text text-justify text-xl leading-[2.8] tracking-wide" dir="rtl">
+      {/* القرآن المتصل - شفاف */}
+      <div className="glass-card p-6 mb-4">
+        <p className="quran-text text-justify text-xl leading-[2.8] tracking-wide text-white drop-shadow-md" dir="rtl">
           {surah.v.map((text, index) => (
             <span key={index} className="inline">
               {text}
-              <span className="mx-1 inline-flex size-6 items-center justify-center rounded-full bg-secondary align-middle font-sans text-xs text-primary">
+              <span className="mx-1 inline-flex size-6 items-center justify-center rounded-full bg-white/20 align-middle font-sans text-xs text-[var(--gold)] backdrop-blur-sm">
                 {toArabicNumber(index + 1)}
               </span>
               {" "}
@@ -235,41 +216,30 @@ export function SurahReader({
         </p>
       </div>
 
-      {/* مشغل التلاوة */}
-      <div className="surface-card p-5">
-        <div className="mb-3 flex items-center justify-between">
-          <h3 className="text-sm font-bold">تشغيل التلاوة</h3>
-          <button
-            onClick={closePlayer}
-            aria-label="إغلاق المشغل"
-            className="press flex size-7 items-center justify-center rounded-lg bg-secondary text-muted-foreground"
-          >
-            <X className="size-3.5" />
-          </button>
-        </div>
-
-        <div className="mb-4 flex items-center gap-2">
-          <span className="w-10 text-[10px] tabular-nums text-muted-foreground">{fmt(position)}</span>
+      {/* مشغل التلاوة - ثابت مع التمرير */}
+      <div className="glass-card p-5 fixed bottom-20 left-4 right-4 z-50 max-w-lg mx-auto rounded-2xl">
+        <div className="flex items-center gap-3 mb-4">
+          <span className="w-12 text-[11px] tabular-nums text-white/50 text-right">{fmt(position)}</span>
           <input
             type="range"
             min={0}
-            max={duration || 0}
+            max={duration || 100}
             step={0.1}
-            value={Math.min(position, duration || 0)}
+            value={Math.min(position, duration || 100)}
             onChange={(e) => seek(Number(e.target.value))}
             aria-label="شريط التقدم"
-            className="h-1.5 flex-1 accent-[var(--gold)]"
+            className="h-1.5 flex-1 accent-[var(--gold)] bg-white/20 rounded-full [&::-webkit-slider-thumb]:bg-[var(--gold)] [&::-webkit-slider-thumb]:size-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-lg"
           />
-          <span className="w-10 text-[10px] tabular-nums text-muted-foreground">{fmt(duration)}</span>
+          <span className="w-12 text-[11px] tabular-nums text-white/50 text-left">{fmt(duration)}</span>
         </div>
 
-        <div className="flex items-center justify-center gap-4">
+        <div className="flex items-center justify-center gap-3">
           <button
             onClick={() => {
-              haptic("light");
+              haptic("soft");
               seek(Math.max(0, position - 10));
             }}
-            className="press flex size-9 items-center justify-center rounded-xl bg-secondary text-muted-foreground"
+            className="soothing-btn flex size-10 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm"
             aria-label="تراجع 10 ثوان"
           >
             <span className="text-xs font-bold">-10</span>
@@ -277,38 +247,41 @@ export function SurahReader({
           <button
             onClick={toggleLoop}
             className={cn(
-              "press flex size-9 items-center justify-center rounded-xl",
-              isLooping ? "gradient-gold text-gold-foreground" : "bg-secondary text-muted-foreground",
+              "soothing-btn flex size-10 items-center justify-center rounded-full backdrop-blur-sm",
+              isLooping ? "bg-[var(--gold)] text-[#1a1a3a]" : "bg-white/15 text-white",
             )}
             aria-label="تكرار"
           >
-            <Repeat className="size-4" />
+            <Repeat className="size-5" />
           </button>
           <button
             onClick={toggle}
-            className="press flex size-14 items-center justify-center rounded-2xl gradient-warm text-primary-foreground"
+            className="soothing-btn flex size-16 items-center justify-center rounded-full bg-[var(--gold)] text-[#1a1a3a] shadow-[0_8px_30px_rgba(212,175,55,0.4)] active:scale-95"
             aria-label={isPlaying ? "إيقاف" : "تشغيل"}
           >
             {buffering ? (
-              <Loader2 className="size-6 animate-spin" />
+              <Loader2 className="size-7 animate-spin" />
             ) : isPlaying ? (
-              <Pause className="size-6" />
+              <Pause className="size-7" />
             ) : (
-              <Play className="size-6" />
+              <Play className="size-7 mr-1" />
             )}
           </button>
           <button
             onClick={() => {
-              haptic("light");
+              haptic("soft");
               seek(Math.min(duration, position + 10));
             }}
-            className="press flex size-9 items-center justify-center rounded-xl bg-secondary text-muted-foreground"
+            className="soothing-btn flex size-10 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm"
             aria-label="تقديم 10 ثوان"
           >
             <span className="text-xs font-bold">+10</span>
           </button>
         </div>
       </div>
+      
+      {/* مسافة إضافية للأسفل */}
+      <div className="h-40" />
     </div>
   );
 }
