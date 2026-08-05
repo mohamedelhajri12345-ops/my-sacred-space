@@ -125,8 +125,8 @@ const SHAPES = [
 export function AnimatedBackground() {
   return (
     <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-      {/* Background gradient - أزرق داكن مريح للعين */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#1B2A4A] to-[#2C3E6B]" />
+      {/* تدرّج زيتي/سماوي فضي هادئ يتبع الوضع النهاري والليلي */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[color-mix(in_oklab,var(--olive)_16%,var(--background))] via-[var(--background)] to-[color-mix(in_oklab,var(--sky)_18%,var(--background))]" />
       
       {/* Islamic geometric border pattern at top */}
       <div className="absolute inset-x-0 top-0 h-2 overflow-hidden opacity-20">
@@ -142,31 +142,11 @@ export function AnimatedBackground() {
       </div>
       
       {/* Floating blur circles - warm, cozy background */}
-      <FloatingBlurCircle 
-        color="#D4A574" 
-        size="large" 
-        className="left-[-20%] top-[-10%] [animation-delay:0s]" 
-      />
-      <FloatingBlurCircle 
-        color="#7A8B69" 
-        size="medium" 
-        className="right-[-15%] top-[20%] [animation-delay:-8s]" 
-      />
-      <FloatingBlurCircle 
-        color="#C4795B" 
-        size="small" 
-        className="left-[10%] bottom-[15%] [animation-delay:-15s]" 
-      />
-      <FloatingBlurCircle 
-        color="#D4A574" 
-        size="medium" 
-        className="right-[20%] bottom-[25%] [animation-delay:-5s]" 
-      />
-      <FloatingBlurCircle 
-        color="#7A8B69" 
-        size="small" 
-        className="left-[50%] top-[50%] [animation-delay:-12s]" 
-      />
+      <FloatingBlurCircle color="var(--gold)" size="large" className="left-[-20%] top-[-10%]" />
+      <FloatingBlurCircle color="var(--olive)" size="medium" className="right-[-15%] top-[20%] [animation-delay:-8s]" />
+      <FloatingBlurCircle color="var(--sky)" size="small" className="left-[10%] bottom-[15%] [animation-delay:-15s]" />
+      <FloatingBlurCircle color="var(--gold-soft)" size="medium" className="right-[20%] bottom-[25%] [animation-delay:-5s]" />
+      <FloatingBlurCircle color="var(--silver)" size="small" className="left-[50%] top-[50%] [animation-delay:-12s]" />
       
       {/* هالات ضوئية ناعمة - Spiritual glows */}
       <div className="animate-glow-float absolute -top-24 right-[-15%] size-[26rem] rounded-full bg-[color-mix(in_oklab,var(--gold)_28%,transparent)] blur-3xl opacity-30" />
