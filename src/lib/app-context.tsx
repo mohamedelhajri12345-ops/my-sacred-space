@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { useLocalStorage } from "./use-local-storage";
 import { DEFAULT_COORDS, type Coords, type MethodKey, type PrayerKey } from "./prayer";
 import { methodForCountry, reverseGeocode, type PlaceInfo } from "./geo";
+import { registerForPushNotifications, requestNotificationPermission } from "./notifications";
 
 export type AlertKind = "silent" | "beep" | "adhan";
 
