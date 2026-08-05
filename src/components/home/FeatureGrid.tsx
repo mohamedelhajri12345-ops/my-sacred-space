@@ -1,9 +1,10 @@
 import { Link } from "@tanstack/react-router";
-import { BookOpen, Compass, CalendarDays, Sparkles, Clock, Hand, NotebookPen, Trophy, Sun, MapPin } from "lucide-react";
+import { BookOpen, Compass, CalendarDays, Sparkles, Clock, Hand, NotebookPen, Trophy, Sun, MapPin, Library, Music } from "lucide-react";
 import { haptic } from "@/lib/haptics";
 
 const FEATURES = [
   { to: "/quran", title: "القرآن الكريم", desc: "قراءة وتفسير وبحث", icon: BookOpen, tint: "var(--olive)" },
+  { to: "/library", title: "المكتبة", desc: "أناشيد وأغاني", icon: Music, tint: "var(--gold)" },
   { to: "/athkar", title: "الأذكار والأدعية", desc: "صباح ومساء وأدعية", icon: Sparkles, tint: "var(--gold)" },
   { to: "/athkar/tasbih", title: "المسبحة", desc: "عداد تسبيح تفاعلي", icon: Hand, tint: "var(--emerald)" },
   { to: "/prayer", title: "مواقيت الصلاة", desc: "حسب موقعك", icon: Clock, tint: "var(--sky)" },
