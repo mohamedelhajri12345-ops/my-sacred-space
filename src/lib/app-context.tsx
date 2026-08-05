@@ -177,22 +177,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
       });
     };
 
-    // 2. محاولة IP API كبديل
+    // 2. محاولة IP API كبديل (يعمل في جميع دول العالم)
     const tryIPGeolocation = async (): Promise<{ latitude: number; longitude: number; source: string } | null> => {
       try {
-        // استخدام ip-api.com (مجاني بدون مفتاح)
-        const res = await fetch("http://ip-api.com/json/?fields=lat,lon,city,country,countryCode", {
+        // استخدام ip-api.com (مجاني بدون مفتاح - يعمل عالمياً)
+        const res = await fetch("https://ip-api.com/json/?fields=status,message,country,countryCode,region,regionName,city,lat,lon", {
           headers: { accept: "application/json" }
         });
         if (res.ok) {
           const data = await res.json();
-          if (data.lat && data.lon) {
+          if (data.status === "success" && data.lat && data.lon) {
             return { 
               latitude: data.lat, 
               longitude: data.lon, 
-              source: "IP",
-              // @ts-ignore - إضافة معلومات إضافية
+              source: "IP (عالمي)",
               city: data.city,
+              region: data.regionName,
               country: data.country,
               countryCode: data.countryCode
             };
@@ -200,9 +200,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }
       } catch { /* ignore */ }
       
-      // محاولة بديلة مع ipapi.co
+      // محاولة بديلة مع freeipapi.com
       try {
-        const res = await fetch("https://ipapi.co/json/", {
+        const res = await fetch("https://freeipapi.com/api/json/", {
           headers: { accept: "application/json" }
         });
         if (res.ok) {
@@ -211,7 +211,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
             return { 
               latitude: data.latitude, 
               longitude: data.longitude, 
-              source: "IP" 
+              source: "IP (عالمي)",
+              city: data.city,
+              country: data.country,
+              countryCode: data.countryCode
             };
           }
         }
