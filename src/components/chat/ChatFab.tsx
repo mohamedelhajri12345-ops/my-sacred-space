@@ -218,7 +218,8 @@ export function ChatFab() {
           haptic("medium");
           setOpen(true);
         }}
-        className="press animate-soft-pulse fixed bottom-24 left-4 z-50 flex size-14 items-center justify-center rounded-full gradient-gold text-gold-foreground shadow-[var(--shadow-glow)]"
+        className="press animate-soft-pulse fixed bottom-24 left-4 z-50 flex size-14 items-center justify-center rounded-full gradient-gold text-gold-foreground"
+        style={{ boxShadow: '0 8px 32px -8px rgba(212, 175, 55, 0.6), 0 0 40px rgba(212, 175, 55, 0.3)' }}
       >
         <div className="relative">
           <Moon className="size-6 -rotate-12" />

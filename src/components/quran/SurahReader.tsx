@@ -5,6 +5,8 @@ import {
   Pause,
   Play,
   Repeat,
+  ChevronUp,
+  ChevronDown,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -31,6 +33,7 @@ export function SurahReader({
   const [position, setPosition] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isLooping, setIsLooping] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
   const [, setProgress] = useLocalStorage<ReadingProgress | null>("islamic:progress", null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -185,6 +188,8 @@ export function SurahReader({
     return `${m}:${String(sec).padStart(2, "0")}`;
   };
 
+  const progressPercent = duration > 0 ? (position / duration) * 100 : 0;
+
   return (
     <div className="min-h-screen">
       {/* Header - شفاف مع نص أغمق */}
@@ -215,73 +220,178 @@ export function SurahReader({
           ))}
         </p>
       </div>
-
-      {/* مشغل التلاوة - ثابت مع التمرير */}
-      <div className="glass-card p-5 fixed bottom-20 left-4 right-4 z-50 max-w-lg mx-auto rounded-2xl">
-        <div className="flex items-center gap-3 mb-4">
-          <span className="w-12 text-[11px] tabular-nums text-white/50 text-right">{fmt(position)}</span>
-          <input
-            type="range"
-            min={0}
-            max={duration || 100}
-            step={0.1}
-            value={Math.min(position, duration || 100)}
-            onChange={(e) => seek(Number(e.target.value))}
-            aria-label="شريط التقدم"
-            className="h-1.5 flex-1 accent-[var(--gold)] bg-white/20 rounded-full [&::-webkit-slider-thumb]:bg-[var(--gold)] [&::-webkit-slider-thumb]:size-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-lg"
-          />
-          <span className="w-12 text-[11px] tabular-nums text-white/50 text-left">{fmt(duration)}</span>
-        </div>
-
-        <div className="flex items-center justify-center gap-3">
-          <button
-            onClick={() => {
-              haptic("soft");
-              seek(Math.max(0, position - 10));
-            }}
-            className="soothing-btn flex size-10 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm"
-            aria-label="تراجع 10 ثوان"
-          >
-            <span className="text-xs font-bold">-10</span>
-          </button>
-          <button
-            onClick={toggleLoop}
-            className={cn(
-              "soothing-btn flex size-10 items-center justify-center rounded-full backdrop-blur-sm",
-              isLooping ? "bg-[var(--gold)] text-[#1a1a3a]" : "bg-white/15 text-white",
-            )}
-            aria-label="تكرار"
-          >
-            <Repeat className="size-5" />
-          </button>
-          <button
-            onClick={toggle}
-            className="soothing-btn flex size-16 items-center justify-center rounded-full bg-[var(--gold)] text-[#1a1a3a] shadow-[0_8px_30px_rgba(212,175,55,0.4)] active:scale-95"
-            aria-label={isPlaying ? "إيقاف" : "تشغيل"}
-          >
-            {buffering ? (
-              <Loader2 className="size-7 animate-spin" />
-            ) : isPlaying ? (
-              <Pause className="size-7" />
-            ) : (
-              <Play className="size-7 mr-1" />
-            )}
-          </button>
-          <button
-            onClick={() => {
-              haptic("soft");
-              seek(Math.min(duration, position + 10));
-            }}
-            className="soothing-btn flex size-10 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm"
-            aria-label="تقديم 10 ثوان"
-          >
-            <span className="text-xs font-bold">+10</span>
-          </button>
-        </div>
-      </div>
       
       {/* مسافة إضافية للأسفل */}
-      <div className="h-40" />
+      <div className="h-48" />
     </div>
+  );
+}
+
+// مشغل التلاوة المتحرك - منفصل عن المحتوى
+export function FloatingAudioPlayer({
+  isPlaying,
+  buffering,
+  position,
+  duration,
+  isLooping,
+  onToggle,
+  onSeek,
+  onToggleLoop,
+  onMinimize,
+  onMaximize,
+  isMinimized,
+  surahName,
+  reciterName,
+}: {
+  isPlaying: boolean;
+  buffering: boolean;
+  position: number;
+  duration: number;
+  isLooping: boolean;
+  onToggle: () => void;
+  onSeek: (value: number) => void;
+  onToggleLoop: () => void;
+  onMinimize: () => void;
+  onMaximize: () => void;
+  isMinimized: boolean;
+  surahName?: string;
+  reciterName?: string;
+}) {
+  const fmt = (s: number) => {
+    if (!Number.isFinite(s) || s <= 0) return "٠:٠٠";
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60);
+    return `${m}:${String(sec).padStart(2, "0")}`;
+  };
+
+  const progressPercent = duration > 0 ? (position / duration) * 100 : 0;
+
+  return (
+    <>
+      {/* المشغل المصغر */}
+      {isMinimized && (
+        <button
+          onClick={onMaximize}
+          className="fixed bottom-24 left-4 z-50 flex items-center gap-3 glass-card rounded-full px-4 py-3 transition-all duration-300 hover:scale-105 active:scale-95"
+          style={{
+            boxShadow: '0 8px 32px -8px rgba(0, 0, 0, 0.4), 0 0 20px rgba(212, 175, 55, 0.2)'
+          }}
+        >
+          <div className={cn(
+            "flex size-10 items-center justify-center rounded-full transition-all duration-300",
+            isPlaying ? "bg-[var(--gold)] text-[#1a1a3a]" : "bg-white/20 text-white"
+          )}>
+            {buffering ? (
+              <Loader2 className="size-5 animate-spin" />
+            ) : isPlaying ? (
+              <Pause className="size-5" />
+            ) : (
+              <Play className="size-5 mr-0.5" />
+            )}
+          </div>
+          <div className="text-right">
+            <p className="text-xs font-bold text-white">{surahName || "التلاوة"}</p>
+            <p className="text-[10px] text-white/60">{reciterName}</p>
+          </div>
+          <div className="h-8 w-px bg-white/20 mx-1" />
+          <span className="text-[10px] text-white/60 tabular-nums">{fmt(position)}</span>
+        </button>
+      )}
+
+      {/* المشغل الكامل */}
+      {!isMinimized && (
+        <div 
+          className="fixed bottom-20 left-4 right-4 z-50 max-w-lg mx-auto glass-card rounded-2xl overflow-hidden transition-all duration-300"
+          style={{
+            boxShadow: '0 12px 48px -12px rgba(0, 0, 0, 0.5), 0 0 30px rgba(212, 175, 55, 0.15)'
+          }}
+        >
+          {/* شريط التقدم */}
+          <div className="h-1 bg-white/10 cursor-pointer" onClick={(e) => {
+            if (duration <= 0) return;
+            const rect = e.currentTarget.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            onSeek(percent * duration);
+          }}>
+            <div 
+              className="h-full bg-gradient-to-r from-[var(--gold)] to-[var(--gold-soft)] transition-all duration-100"
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
+          
+          <div className="p-4">
+            {/* معلومات السورة */}
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <p className="text-sm font-bold text-white drop-shadow-md">{surahName || "التلاوة"}</p>
+                <p className="text-[10px] text-white/60">{reciterName}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] tabular-nums text-white/50">{fmt(position)}</span>
+                <span className="text-[10px] text-white/30">/</span>
+                <span className="text-[10px] tabular-nums text-white/50">{fmt(duration)}</span>
+              </div>
+              <button
+                onClick={onMinimize}
+                className="flex size-8 items-center justify-center rounded-full bg-white/10 text-white/60 transition-colors hover:bg-white/20 hover:text-white"
+                aria-label="تصغير"
+              >
+                <ChevronDown className="size-4" />
+              </button>
+            </div>
+
+            {/* أزرار التحكم */}
+            <div className="flex items-center justify-center gap-4">
+              <button
+                onClick={() => {
+                  haptic("soft");
+                  onSeek(Math.max(0, position - 10));
+                }}
+                className="soothing-btn flex size-11 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm hover:bg-white/25 active:scale-90"
+                aria-label="تراجع 10 ثوان"
+              >
+                <span className="text-xs font-bold">-10</span>
+              </button>
+              
+              <button
+                onClick={onToggleLoop}
+                className={cn(
+                  "soothing-btn flex size-11 items-center justify-center rounded-full backdrop-blur-sm transition-all active:scale-90",
+                  isLooping ? "bg-[var(--gold)] text-[#1a1a3a] shadow-[0_4px_20px_rgba(212,175,55,0.4)]" : "bg-white/15 text-white hover:bg-white/25"
+                )}
+                aria-label="تكرار"
+              >
+                <Repeat className="size-5" />
+              </button>
+              
+              <button
+                onClick={onToggle}
+                className="soothing-btn flex size-16 items-center justify-center rounded-full bg-gradient-to-br from-[var(--gold)] to-[var(--gold-soft)] text-[#1a1a3a] shadow-[0_8px_30px_rgba(212,175,55,0.5)] active:scale-90 transition-transform"
+                aria-label={isPlaying ? "إيقاف" : "تشغيل"}
+              >
+                {buffering ? (
+                  <Loader2 className="size-7 animate-spin" />
+                ) : isPlaying ? (
+                  <Pause className="size-7" />
+                ) : (
+                  <Play className="size-7 mr-1" />
+                )}
+              </button>
+              
+              <button
+                onClick={() => {
+                  haptic("soft");
+                  onSeek(Math.min(duration, position + 10));
+                }}
+                className="soothing-btn flex size-11 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm hover:bg-white/25 active:scale-90"
+                aria-label="تقديم 10 ثوان"
+              >
+                <span className="text-xs font-bold">+10</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

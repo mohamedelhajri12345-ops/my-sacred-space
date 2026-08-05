@@ -27,15 +27,18 @@ export function AppShell({
       ) : (
         <div aria-hidden className="pattern-geo pointer-events-none fixed inset-0 -z-10 opacity-[0.35]" />
       )}
-      <header className="glass-card sticky top-0 z-30 mx-4 mt-4 rounded-2xl" style={{ boxShadow: '0 4px 20px rgba(0, 0, 0, 0.2)' }}>
+      <header className="glass-card sticky top-0 z-30 mx-4 mt-4 rounded-2xl" style={{ 
+        boxShadow: '0 8px 32px -8px rgba(0, 0, 0, 0.3), 0 0 20px rgba(212, 175, 55, 0.1)',
+        textShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
+      }}>
         <div className="mx-auto flex max-w-xl items-center justify-between gap-3 px-4 py-3">
           <div className="flex min-w-0 items-center gap-2.5">
-            <span className="gradient-gold flex size-9 shrink-0 items-center justify-center rounded-xl text-gold-foreground shadow-sm">
+            <span className="gradient-gold flex size-9 shrink-0 items-center justify-center rounded-xl text-gold-foreground shadow-[0_4px_12px_rgba(212,175,55,0.3)]">
               <PrayingPerson className="size-6" />
             </span>
             <div className="min-w-0">
-              <h1 className="font-display truncate text-lg font-bold leading-tight text-white">{title ?? "أحلام الروح"}</h1>
-              <p className="truncate text-xs text-white/60">{subtitle ?? formatHijri(new Date())}</p>
+              <h1 className="font-display truncate text-lg font-bold leading-tight text-white drop-shadow-md">{title ?? "أحلام الروح"}</h1>
+              <p className="truncate text-xs text-white/70">{subtitle ?? formatHijri(new Date())}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
