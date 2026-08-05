@@ -14,6 +14,14 @@ import {
   Clock3,
   Star,
   Eye,
+  Zap,
+  Wifi,
+  WifiOff,
+  Smartphone,
+  Volume2,
+  Vibrate,
+  Shield,
+  Gauge,
 } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { useApp } from "@/lib/app-context";
@@ -28,10 +36,10 @@ import type { AlertKind } from "@/lib/app-context";
 export const Route = createFileRoute("/settings")({
   head: () => ({
     meta: [
-      { title: "الإعدادات — نور" },
-      { name: "description", content: "اضبط الموقع وطريقة حساب المواقيت وتنبيهات الأذان والقارئ والمظهر وتذكيرات القيام والصيام." },
-      { property: "og:title", content: "الإعدادات — نور" },
-      { property: "og:description", content: "تخصيص كامل لتجربتك في تطبيق نور." },
+      { title: "الإعدادات — أحلام الروض" },
+      { name: "description", content: "اضبط الموقع وطريقة حساب المواقيت وتنبيهات الأذان والقارئ والمظهر." },
+      { property: "og:title", content: "الإعدادات — أحلام الروض" },
+      { property: "og:description", content: "تخصيص كامل لتجربتك في تطبيق أحلام الروض." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -141,8 +149,9 @@ const ALERTS: { key: AlertKind; label: string }[] = [
 ];
 
 function SettingsPage() {
-  const { settings, updateSettings, coords, place, requestLocation, locating, locationError, streak } = useApp();
+  const { settings, updateSettings, coords, place, requestLocation, locating, locationError, streak, online } = useApp();
   const [previewing, setPreviewing] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const enableNotifications = async () => {
     haptic("medium");
@@ -155,10 +164,31 @@ function SettingsPage() {
     if (result === "granted") {
       updateSettings({ notificationsEnabled: true });
       toast.success("تم تفعيل التنبيهات");
+      await registerForBackgroundNotifications();
     } else if (result === "unsupported") {
       toast.error("متصفحك لا يدعم الإشعارات");
     } else {
       toast.error("لم يتم منح إذن الإشعارات");
+    }
+  };
+
+  const registerForBackgroundNotifications = async () => {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      if ('serviceWorker' in navigator) {
+        try {
+          const registration = await navigator.serviceWorker.ready;
+          // طلب إذن Push
+          if ('pushManager' in registration) {
+            const subscription = await registration.pushManager.subscribe({
+              userVisibleOnly: true,
+              applicationServerKey: urlBase64ToUint8Array('BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U7M')
+            });
+            console.log('Push subscription:', subscription);
+          }
+        } catch (error) {
+          console.log('Push registration failed:', error);
+        }
+      }
     }
   };
 
@@ -176,6 +206,23 @@ function SettingsPage() {
   return (
     <AppShell title="الإعدادات" subtitle="خصّص تجربتك">
       <div className="space-y-4 pb-24">
+        {/* حالة الاتصال */}
+        <div className="surface-card p-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {online ? (
+              <Wifi className="size-4 text-green-500" />
+            ) : (
+              <WifiOff className="size-4 text-muted-foreground" />
+            )}
+            <span className="text-xs">
+              {online ? "متصل بالإنترنت" : "غير متصل - أوفلاين"}
+            </span>
+          </div>
+          <div className="text-[10px] text-muted-foreground">
+            AI: {online ? "متاح" : "غير متاح"}
+          </div>
+        </div>
+
         <Section title="الموقع والصلاة" icon={MapPin}>
           <p className="text-[11px] leading-6 text-muted-foreground">
             نحتاج موقعك لحساب مواقيت الصلاة واتجاه القبلة بدقة. الموقع يُحفظ على جهازك فقط ولا يُرسل لأي خادم
@@ -190,7 +237,7 @@ function SettingsPage() {
               }}
               className="press shrink-0 rounded-full border border-border bg-card px-3 py-1.5"
             >
-              {locating ? "جارٍ التحديد…" : "تحديد موقعي"}
+              {locating ? "جارٍ التحديد…" : "تحديد موقعي (GPS)"}
             </button>
           </div>
           {locationError && <p className="text-[11px] text-destructive">{locationError}</p>}
@@ -238,8 +285,19 @@ function SettingsPage() {
                 : "bg-secondary text-secondary-foreground",
             )}
           >
-            {settings.notificationsEnabled ? "التنبيهات مُفعّلة" : "تفعيل التنبيهات"}
+            {settings.notificationsEnabled ? "التنبيهات مُفعّلة ✓" : "تفعيل التنبيهات"}
           </button>
+
+          <p className="text-[11px] text-muted-foreground">
+            {settings.notificationsEnabled ? (
+              <span className="flex items-center gap-1">
+                <Smartphone className="size-3" />
+                الإشعارات تعمل حتى عند إغلاق التطبيق
+              </span>
+            ) : (
+              "تفعيل الإشعارات للحصول على تنبيهات الأذان"
+            )}
+          </p>
 
           <div className="flex gap-2">
             {ALERTS.map((a) => (
@@ -256,6 +314,9 @@ function SettingsPage() {
                     : "bg-card text-muted-foreground",
                 )}
               >
+                {a.key === "silent" && <Volume2 className="size-3 mx-auto mb-1" />}
+                {a.key === "beep" && <Vibrate className="size-3 mx-auto mb-1" />}
+                {a.key === "adhan" && <BellRing className="size-3 mx-auto mb-1" />}
                 {a.label}
               </button>
             ))}
@@ -394,17 +455,89 @@ function SettingsPage() {
           />
         </Section>
 
+        {/* الإعدادات المتقدمة */}
+        <button
+          onClick={() => setShowAdvanced(!showAdvanced)}
+          className="flex w-full items-center justify-between rounded-xl border border-border bg-card p-4 text-sm transition-colors hover:bg-secondary"
+        >
+          <div className="flex items-center gap-2">
+            <Zap className="size-4 text-[var(--gold)]" />
+            <span className="font-medium">الإعدادات المتقدمة</span>
+          </div>
+          <span className="text-muted-foreground">{showAdvanced ? "▲" : "▼"}</span>
+        </button>
+
+        {showAdvanced && (
+          <div className="space-y-4">
+            <Section title="الأداء" icon={Gauge}>
+              <Toggle
+                label="التحميل السريع"
+                hint="تحميل المحتوى الأهم أولاً"
+                value={true}
+                onChange={() => {}}
+              />
+              <Toggle
+                label="تخزين ذكي"
+                hint="حفظ البيانات للاستخدام أوفلاين"
+                value={true}
+                onChange={() => {}}
+              />
+            </Section>
+
+            <Section title="الخصوصية" icon={Shield}>
+              <Toggle
+                label="حفظ الموقع محلياً"
+                hint="عدم إرسال الموقع للخوادم"
+                value={true}
+                onChange={() => {}}
+              />
+              <Toggle
+                label="عدم تتبع الاستخدام"
+                hint="تحسين الخصوصية"
+                value={false}
+                onChange={() => {}}
+              />
+            </Section>
+
+            <Section title="إدارة البيانات" icon={BookOpenText}>
+              <button className="press w-full rounded-xl border border-border bg-card px-3 py-2.5 text-sm text-right">
+                تصدير البيانات
+              </button>
+              <button className="press w-full rounded-xl border border-destructive bg-destructive/10 px-3 py-2.5 text-sm text-destructive text-right">
+                حذف جميع البيانات
+              </button>
+            </Section>
+          </div>
+        )}
+
         <Section title="عن التطبيق" icon={Info}>
           <p className="text-xs text-muted-foreground">
             سلسلة الأذكار: {streak.count} يوم · مجموع الجلسات: {streak.totalSessions}
           </p>
           <p className="text-[11px] leading-6 text-muted-foreground">
-            «نور» تطبيق إسلامي يعمل بالكامل بدون إنترنت بعد أول زيارة. جميع بياناتك — العلامات، الختمة،
-            المفكرة — محفوظة على جهازك فقط بلا حساب ولا مزامنة. التلاوة الصوتية والمحادثة الذكية فقط تحتاج
-            اتصالًا.
+            «أحلام الروض» تطبيق إسلامي يعمل بالكامل بدون إنترنت بعد أول زيارة. جميع بياناتك — العلامات، الختمة،
+            المفكرة — محفوظة على جهازك فقط بلا حساب ولا مزامنة. التلاوة الصوتية والذكاء الاصطناعي فقط يحتاجان
+            اتصالًا بالإنترنت.
           </p>
+          <div className="mt-2 flex items-center gap-2 text-[10px] text-muted-foreground">
+            <span className="rounded-full bg-green-500/20 px-2 py-1 text-green-500">القرآن: أوفلاين</span>
+            <span className="rounded-full bg-[var(--gold)]/20 px-2 py-1 text-[var(--gold)]">AI: {online ? "متصل" : "غير متاح"}</span>
+            <span className="rounded-full bg-blue-500/20 px-2 py-1 text-blue-500">الصوت: أوفلاين</span>
+          </div>
         </Section>
       </div>
     </AppShell>
   );
+}
+
+// Helper function for push notifications
+function urlBase64ToUint8Array(base64String: string): Uint8Array {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
 }

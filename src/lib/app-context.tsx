@@ -146,35 +146,117 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [setSettings]);
 
   const requestLocation = useCallback(async () => {
-    if (typeof navigator === "undefined" || !navigator.geolocation) {
-      setLocationError("جهازك لا يدعم تحديد الموقع، يمكنك اختيار المدينة يدويًا من الإعدادات");
+    if (typeof navigator === "undefined") {
+      setLocationError("المتصفح غير مدعوم");
       return;
     }
     setLocating(true);
     setLocationError(null);
+    
+    // 1. محاولة GPS أولاً (دقة عالية)
+    const tryGeolocation = (): Promise<{ latitude: number; longitude: number; source: string } | null> => {
+      return new Promise((resolve) => {
+        if (!navigator.geolocation) {
+          resolve(null);
+          return;
+        }
+        
+        navigator.geolocation.getCurrentPosition(
+          (pos) => resolve({ 
+            latitude: pos.coords.latitude, 
+            longitude: pos.coords.longitude, 
+            source: "GPS" 
+          }),
+          () => resolve(null),
+          { 
+            enableHighAccuracy: true, 
+            timeout: 10000, 
+            maximumAge: 300000 
+          }
+        );
+      });
+    };
+
+    // 2. محاولة IP API كبديل
+    const tryIPGeolocation = async (): Promise<{ latitude: number; longitude: number; source: string } | null> => {
+      try {
+        // استخدام ip-api.com (مجاني بدون مفتاح)
+        const res = await fetch("http://ip-api.com/json/?fields=lat,lon,city,country,countryCode", {
+          headers: { accept: "application/json" }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.lat && data.lon) {
+            return { 
+              latitude: data.lat, 
+              longitude: data.lon, 
+              source: "IP",
+              // @ts-ignore - إضافة معلومات إضافية
+              city: data.city,
+              country: data.country,
+              countryCode: data.countryCode
+            };
+          }
+        }
+      } catch { /* ignore */ }
+      
+      // محاولة بديلة مع ipapi.co
+      try {
+        const res = await fetch("https://ipapi.co/json/", {
+          headers: { accept: "application/json" }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.latitude && data.longitude) {
+            return { 
+              latitude: data.latitude, 
+              longitude: data.longitude, 
+              source: "IP" 
+            };
+          }
+        }
+      } catch { /* ignore */ }
+      
+      return null;
+    };
+
     try {
-      const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: true,
-          timeout: 12000,
-          maximumAge: 600000,
-        }),
-      );
-      const { latitude, longitude } = pos.coords;
-      const info = await reverseGeocode(latitude, longitude);
-      const label = info?.city
-        ? info.country
-          ? `${info.city}، ${info.country}`
-          : info.city
-        : "موقعي الحالي";
-      setCoordsState({ latitude, longitude, label });
-      setPlace(info);
-      const suggested = methodForCountry(info?.countryCode);
-      if (suggested) {
-        setSettings((prev) => (prev.autoMethod ? { ...prev, method: suggested } : prev));
+      // محاولة GPS أولاً
+      let location = await tryGeolocation();
+      
+      // إذا فشل GPS، استخدم IP
+      if (!location) {
+        setLocationError("جارٍ تحديد الموقع عبر الإنترنت...");
+        location = await tryIPGeolocation();
+      }
+
+      if (location) {
+        const { latitude, longitude, source, ...extraInfo } = location;
+        const info = await reverseGeocode(latitude, longitude);
+        const finalInfo = extraInfo?.city ? {
+          ...info,
+          city: extraInfo.city as string,
+          country: extraInfo.country as string,
+          countryCode: (extraInfo.countryCode as string)?.toUpperCase()
+        } : info;
+        
+        const label = finalInfo?.city
+          ? finalInfo.country
+            ? `${finalInfo.city}، ${finalInfo.country}`
+            : finalInfo.city
+          : `موقعي (${source})`;
+          
+        setCoordsState({ latitude, longitude, label });
+        setPlace(finalInfo);
+        const suggested = methodForCountry(finalInfo?.countryCode);
+        if (suggested) {
+          setSettings((prev) => (prev.autoMethod ? { ...prev, method: suggested } : prev));
+        }
+      } else {
+        setLocationError("لم نتمكن من تحديد موقعك. يرجى اختيار المدينة يدوياً");
       }
     } catch {
-      setLocationError("لم نتمكن من قراءة موقعك، سنستخدم آخر موقع محفوظ ويمكنك التغيير يدويًا");
+      setLocationError("حدث خطأ أثناء تحديد الموقع. يرجى اختيار المدينة يدوياً");
     } finally {
       setLocating(false);
     }
