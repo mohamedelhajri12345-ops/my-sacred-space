@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { AppShell } from "@/components/layout/AppShell";
 import { NextPrayerCard } from "@/components/prayer/NextPrayerCard";
 import { PrayerTimesList } from "@/components/prayer/PrayerTimesList";
+import { BackButton } from "@/components/ui/back-button";
 import { useApp } from "@/lib/app-context";
 import { requestNotificationPermission } from "@/lib/notifications";
 import { haptic } from "@/lib/haptics";
@@ -39,6 +40,7 @@ function PrayerPage() {
   return (
     <AppShell title="مواقيت الصلاة" subtitle={coords.label ?? "آخر موقع محفوظ"}>
       <div className="space-y-4">
+        <BackButton />
         <NextPrayerCard />
 
         <div className="surface-card flex items-center justify-between p-4">

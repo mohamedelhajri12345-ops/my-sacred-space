@@ -7,7 +7,8 @@ import {
   Shuffle,
   ChevronDown,
   Music,
-  AlertCircle,
+  Heart,
+  Clock,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -19,10 +20,6 @@ import {
   formatDuration,
   type Song,
 } from "@/lib/music";
-import { setupMediaSession, updateMediaSessionState } from "@/lib/notifications";
-import { useLocalStorage } from "@/lib/use-local-storage";
-
-const LAST_SONG_KEY = "islamic:lastSong";
 
 export function MusicLibrary() {
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -34,21 +31,9 @@ export function MusicLibrary() {
   const [isLooping, setIsLooping] = useState(false);
   const [isShuffled, setIsShuffled] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
-  const [audioError, setAudioError] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [lastSongId, setLastSongId] = useLocalStorage<string | null>(LAST_SONG_KEY, null);
 
   const songs = getSongsByCategory(selectedCategory);
-
-  // استعادة آخر أغنية تم تشغيلها
-  useEffect(() => {
-    if (lastSongId && !currentSong) {
-      const song = SONGS.find((s) => s.id === lastSongId);
-      if (song) {
-        setCurrentSong(song);
-      }
-    }
-  }, [lastSongId, currentSong]);
 
   const ensureAudio = useCallback(() => {
     if (audioRef.current) return audioRef.current;
@@ -59,96 +44,28 @@ export function MusicLibrary() {
     return audio;
   }, []);
 
-  // إعداد Media Session API للتحكم من الشاشة الرئيسية
-  useEffect(() => {
-    if (typeof navigator === "undefined" || !('mediaSession' in navigator)) return;
-
-    setupMediaSession(
-      () => {
-        const audio = audioRef.current;
-        if (audio && audio.src) {
-          void audio.play().then(() => setIsPlaying(true)).catch(() => {});
-        }
-      },
-      () => {
-        const audio = audioRef.current;
-        if (audio) {
-          audio.pause();
-          setIsPlaying(false);
-        }
-      },
-      () => {
-        // أغنية التالية
-        if (currentSong) {
-          const currentIndex = songs.findIndex((s) => s.id === currentSong.id);
-          const nextSong = songs[currentIndex + 1];
-          if (nextSong) {
-            playSong(nextSong);
-          }
-        }
-      },
-      () => {
-        // أغنية السابقة
-        if (currentSong) {
-          const currentIndex = songs.findIndex((s) => s.id === currentSong.id);
-          if (currentIndex > 0) {
-            const prevSong = songs[currentIndex - 1];
-            if (prevSong) {
-              playSong(prevSong);
-            }
-          }
-        }
-      }
-    );
-  }, [currentSong, songs]);
-
-  // تحديث Media Session عند تغيير الأغنية أو حالة التشغيل
-  useEffect(() => {
-    if (currentSong && isPlaying) {
-      updateMediaSessionState('playing');
-      
-      if ('mediaSession' in navigator) {
-        try {
-          navigator.mediaSession.metadata = new MediaMetadata({
-            title: currentSong.title,
-            artist: currentSong.artist,
-            album: currentSong.description || "المكتبة الإسلامية",
-            artwork: [
-              { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
-              { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png" }
-            ]
-          });
-        } catch {
-          // قد لا يعمل في جميع المتصفحات
-        }
-      }
-    } else if (!isPlaying) {
-      updateMediaSessionState('paused');
-    }
-  }, [currentSong, isPlaying]);
-
   const playSong = useCallback((song: Song) => {
     const audio = ensureAudio();
     setBuffering(true);
     setPosition(0);
     setDuration(0);
-    setAudioError(null);
     audio.src = song.url;
     audio.load();
-    setCurrentSong(song);
-    setLastSongId(song.id);
     
-    void audio.play().then(() => {
-      setIsPlaying(true);
-      setAudioError(null);
-    }).catch((err) => {
-      setIsPlaying(false);
-      setBuffering(false);
-      const errorMsg = "عذراً، حدث خطأ في تحميل الملف الصوتي، يرجى التحقق من الاتصال";
-      setAudioError(errorMsg);
-      toast.error(errorMsg);
-    });
-  }, [ensureAudio, setLastSongId]);
+    // محاولة التشغيل مع معالجة أفضل للأخطاء
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise.then(() => {
+        setIsPlaying(true);
+        setCurrentSong(song);
+      }).catch((err) => {
+        setIsPlaying(false);
+        setBuffering(false);
+        console.error('Music play error:', err);
+        toast.error("تعذّر تحميل الأغنية - تأكد من اتصالك بالإنترنت");
+      });
+    }
+  }, [ensureAudio]);
 
   // ربط أحداث المشغّل
   useEffect(() => {
@@ -157,12 +74,10 @@ export function MusicLibrary() {
     const onMeta = () => {
       setDuration(Number.isFinite(audio.duration) ? audio.duration : 0);
       setBuffering(false);
-      setAudioError(null);
     };
     const onPlay = () => {
       setIsPlaying(true);
       setBuffering(false);
-      setAudioError(null);
     };
     const onPause = () => setIsPlaying(false);
     const onWaiting = () => setBuffering(true);
@@ -171,22 +86,19 @@ export function MusicLibrary() {
         audio.currentTime = 0;
         void audio.play();
       } else {
+        // تشغيل الأغنية التالية
         const currentIndex = songs.findIndex((s) => s.id === currentSong?.id);
-        const nextSong = songs[currentIndex + 1];
-        if (nextSong) {
-          playSong(nextSong);
+        if (currentIndex < songs.length - 1) {
+          playSong(songs[currentIndex + 1]);
         } else {
           setIsPlaying(false);
-          updateMediaSessionState('none');
         }
       }
     };
     const onError = () => {
       setIsPlaying(false);
       setBuffering(false);
-      const errorMsg = "عذراً، حدث خطأ في تحميل الملف الصوتي، يرجى التحقق من الاتصال";
-      setAudioError(errorMsg);
-      toast.error(errorMsg);
+      toast.error("تعذّر تشغيل الأغنية");
     };
 
     audio.addEventListener("timeupdate", onTime);
@@ -215,17 +127,15 @@ export function MusicLibrary() {
       audio.pause();
       return;
     }
-    if (audio.src) {
-      void audio.play().catch(() => {
-        const errorMsg = "عذراً، حدث خطأ في متابعة التشغيل";
-        setAudioError(errorMsg);
-        toast.error(errorMsg);
+    if (audio.src && audio.src !== "") {
+      audio.play().catch((err) => {
+        console.error('Music resume error:', err);
+        toast.error("تعذّر متابعة التشغيل");
       });
       return;
     }
-    const firstSong = songs[0];
-    if (firstSong) {
-      playSong(firstSong);
+    if (songs.length > 0) {
+      playSong(songs[0]);
     }
   };
 
@@ -240,14 +150,6 @@ export function MusicLibrary() {
 
   return (
     <div className="space-y-4">
-      {/* رسالة الخطأ */}
-      {audioError && (
-        <div className="flex items-center gap-2 p-3 rounded-xl bg-red-500/20 border border-red-500/30 text-red-200 text-sm">
-          <AlertCircle className="size-5 shrink-0" />
-          <span>{audioError}</span>
-        </div>
-      )}
-
       {/* فئات المكتبة */}
       <div className="flex gap-2 overflow-x-auto pb-2">
         {CATEGORIES.map((cat) => (
@@ -271,7 +173,7 @@ export function MusicLibrary() {
 
       {/* قائمة الأغاني */}
       <div className="space-y-2">
-        {songs.map((song) => (
+        {songs.map((song, index) => (
           <button
             key={song.id}
             onClick={() => {
@@ -312,9 +214,6 @@ export function MusicLibrary() {
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold text-white truncate">{song.title}</p>
                 <p className="text-xs text-white/60 truncate">{song.artist}</p>
-                {song.description && (
-                  <p className="text-[10px] text-white/40 truncate mt-0.5">{song.description}</p>
-                )}
               </div>
 
               {/* المدة */}
@@ -390,9 +289,6 @@ export function MusicLibrary() {
                     <div>
                       <p className="text-sm font-bold text-white drop-shadow-md">{currentSong.title}</p>
                       <p className="text-[10px] text-white/60">{currentSong.artist}</p>
-                      {currentSong.description && (
-                        <p className="text-[10px] text-white/40 truncate">{currentSong.description}</p>
-                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">

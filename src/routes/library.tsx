@@ -1,14 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/layout/AppShell";
 import { MusicLibrary } from "@/components/music/MusicLibrary";
+import { BackButton } from "@/components/ui/back-button";
 
 export const Route = createFileRoute("/library")({
   head: () => ({
     meta: [
-      { title: "المكتبة — أحلام الروح" },
-      { name: "description", content: "مكتبة الأناشيد والأدعية والتلاوات الإسلامية مع مشغل متحرك." },
-      { property: "og:title", content: "المكتبة — أحلام الروض" },
-      { property: "og:description", content: "مكتبة أناشيد وأدعية وتلاوات دينية إسلامية." },
+      { title: "المكتبة — نور" },
+      { name: "description", content: "مكتبة الأناشيد والأغاني الدينية الإسلامية مع مشغل متحرك." },
+      { property: "og:title", content: "المكتبة — نور" },
+      { property: "og:description", content: "مكتبة أناشيد وأغاني دينية إسلامية." },
     ],
   }),
   component: LibraryPage,
@@ -16,7 +17,10 @@ export const Route = createFileRoute("/library")({
 
 function LibraryPage() {
   return (
-    <AppShell title="المكتبة الصوتية" subtitle="أناشيد · أدعية · تلاوات">
+    <AppShell title="المكتبة" subtitle="أناشيد وأغاني إسلامية">
+      <div className="mb-4">
+        <BackButton />
+      </div>
       <MusicLibrary />
     </AppShell>
   );

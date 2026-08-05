@@ -2,7 +2,6 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { useLocalStorage } from "./use-local-storage";
 import { DEFAULT_COORDS, type Coords, type MethodKey, type PrayerKey } from "./prayer";
 import { methodForCountry, reverseGeocode, type PlaceInfo } from "./geo";
-import { registerForPushNotifications, requestNotificationPermission } from "./notifications";
 
 export type AlertKind = "silent" | "beep" | "adhan";
 
@@ -10,7 +9,7 @@ export type AlertKind = "silent" | "beep" | "adhan";
 export type PrayerAdjustments = Partial<Record<PrayerKey, number>>;
 
 export type Settings = {
-  theme: "light" | "dark" | "reading";
+  theme: "light" | "dark";
   method: MethodKey;
   autoMethod: boolean;
   notificationsEnabled: boolean;
@@ -116,8 +115,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const root = document.documentElement;
-    root.classList.toggle("dark", settings.theme === "dark" || settings.theme === "reading");
-    root.classList.toggle("reading-mode", settings.theme === "reading");
+    root.classList.toggle("dark", settings.theme === "dark");
     root.style.setProperty("--app-font-scale", String(settings.fontScale));
   }, [settings.theme, settings.fontScale]);
 
@@ -146,120 +144,85 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [setSettings]);
 
   const requestLocation = useCallback(async () => {
-    if (typeof navigator === "undefined") {
-      setLocationError("المتصفح غير مدعوم");
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      setLocationError("جهازك لا يدعم تحديد الموقع، يمكنك اختيار المدينة يدويًا من الإعدادات");
       return;
     }
     setLocating(true);
     setLocationError(null);
     
-    // 1. محاولة GPS أولاً (دقة عالية)
-    const tryGeolocation = (): Promise<{ latitude: number; longitude: number; source: string } | null> => {
-      return new Promise((resolve) => {
-        if (!navigator.geolocation) {
-          resolve(null);
-          return;
-        }
-        
-        navigator.geolocation.getCurrentPosition(
-          (pos) => resolve({ 
-            latitude: pos.coords.latitude, 
-            longitude: pos.coords.longitude, 
-            source: "GPS" 
-          }),
-          () => resolve(null),
-          { 
-            enableHighAccuracy: true, 
-            timeout: 10000, 
-            maximumAge: 300000 
-          }
-        );
-      });
-    };
-
-    // 2. محاولة IP API كبديل (يعمل في جميع دول العالم)
-    const tryIPGeolocation = async (): Promise<{ latitude: number; longitude: number; source: string } | null> => {
-      try {
-        // استخدام ip-api.com (مجاني بدون مفتاح - يعمل عالمياً)
-        const res = await fetch("https://ip-api.com/json/?fields=status,message,country,countryCode,region,regionName,city,lat,lon", {
-          headers: { accept: "application/json" }
-        });
-        if (res.ok) {
-          const data = await res.json();
-          if (data.status === "success" && data.lat && data.lon) {
-            return { 
-              latitude: data.lat, 
-              longitude: data.lon, 
-              source: "IP (عالمي)",
-              city: data.city,
-              region: data.regionName,
-              country: data.country,
-              countryCode: data.countryCode
-            };
-          }
-        }
-      } catch { /* ignore */ }
-      
-      // محاولة بديلة مع freeipapi.com
-      try {
-        const res = await fetch("https://freeipapi.com/api/json/", {
-          headers: { accept: "application/json" }
-        });
-        if (res.ok) {
-          const data = await res.json();
-          if (data.latitude && data.longitude) {
-            return { 
-              latitude: data.latitude, 
-              longitude: data.longitude, 
-              source: "IP (عالمي)",
-              city: data.city,
-              country: data.country,
-              countryCode: data.countryCode
-            };
-          }
-        }
-      } catch { /* ignore */ }
-      
-      return null;
-    };
-
     try {
       // محاولة GPS أولاً
-      let location = await tryGeolocation();
-      
-      // إذا فشل GPS، استخدم IP
-      if (!location) {
-        setLocationError("جارٍ تحديد الموقع عبر الإنترنت...");
-        location = await tryIPGeolocation();
-      }
-
-      if (location) {
-        const { latitude, longitude, source, ...extraInfo } = location;
-        const info = await reverseGeocode(latitude, longitude);
-        const finalInfo = extraInfo?.city ? {
-          ...info,
-          city: extraInfo.city as string,
-          country: extraInfo.country as string,
-          countryCode: (extraInfo.countryCode as string)?.toUpperCase()
-        } : info;
-        
-        const label = finalInfo?.city
-          ? finalInfo.country
-            ? `${finalInfo.city}، ${finalInfo.country}`
-            : finalInfo.city
-          : `موقعي (${source})`;
-          
-        setCoordsState({ latitude, longitude, label });
-        setPlace(finalInfo);
-        const suggested = methodForCountry(finalInfo?.countryCode);
-        if (suggested) {
-          setSettings((prev) => (prev.autoMethod ? { ...prev, method: suggested } : prev));
-        }
-      } else {
-        setLocationError("لم نتمكن من تحديد موقعك. يرجى اختيار المدينة يدوياً");
+      const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 12000,
+          maximumAge: 600000,
+        }),
+      );
+      const { latitude, longitude } = pos.coords;
+      const info = await reverseGeocode(latitude, longitude);
+      const label = info?.city
+        ? info.country
+          ? `${info.city}، ${info.country}`
+          : info.city
+        : "موقعي الحالي (GPS)";
+      setCoordsState({ latitude, longitude, label });
+      setPlace(info);
+      const suggested = methodForCountry(info?.countryCode);
+      if (suggested) {
+        setSettings((prev) => (prev.autoMethod ? { ...prev, method: suggested } : prev));
       }
     } catch {
-      setLocationError("حدث خطأ أثناء تحديد الموقع. يرجى اختيار المدينة يدوياً");
+      // إذا فشل GPS، استخدم API بديل عبر IP
+      try {
+        setLocationError("لم نتمكن من استخدام GPS، جاري تحديد الموقع عبر عنوان الإنترنت...");
+        const response = await fetch('https://ipapi.co/json/', { 
+          headers: { 'Accept': 'application/json' },
+          mode: 'cors'
+        });
+        
+        if (response.ok) {
+          const data = await response.json() as {
+            latitude?: number;
+            longitude?: number;
+            city?: string;
+            country_name?: string;
+            country_code?: string;
+            timezone?: string;
+          };
+          
+          if (data.latitude && data.longitude) {
+            const info = {
+              city: data.city,
+              country: data.country_name,
+              countryCode: data.country_code?.toUpperCase(),
+              timezone: data.timezone,
+            };
+            
+            const label = data.city
+              ? `${data.city}، ${data.country_name}`
+              : "موقعي الحالي (IP)";
+              
+            setCoordsState({ latitude: data.latitude, longitude: data.longitude, label });
+            setPlace(info);
+            
+            const suggested = methodForCountry(data.country_code);
+            if (suggested) {
+              setSettings((prev) => (prev.autoMethod ? { ...prev, method: suggested } : prev));
+            }
+            
+            toast.success("تم تحديد موقعك بنجاح");
+            setLocationError(null);
+            setLocating(false);
+            return;
+          }
+        }
+      } catch {
+        // تجاهل خطأ IP API
+      }
+      
+      setLocationError("لم نتمكن من قراءة موقعك، يمكنك اختيار المدينة يدويًا من الإعدادات");
     } finally {
       setLocating(false);
     }
