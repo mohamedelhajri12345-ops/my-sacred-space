@@ -6,7 +6,8 @@
 
 @theme {
   --font-arabic: "Tajawal", system-ui, sans-serif;
-  --font-display: "Amiri", Georgia, serif;
+  --font-display: "Aref Ruqaa", "Amiri", Georgia, serif;
+  --font-naskh: "Amiri", Georgia, serif;
   --font-quran: "Noto Naskh Arabic", "Amiri Quran", "Amiri", serif;
 }
 
@@ -30,6 +31,11 @@
   --color-gold-foreground: var(--gold-foreground);
   --color-cream: var(--cream);
   --color-sand: var(--sand);
+  --color-silver: var(--silver);
+  --color-sky: var(--sky);
+  --color-olive: var(--olive);
+  --color-olive-soft: var(--olive-soft);
+  --color-rose: var(--rose);
   --color-emerald: var(--emerald);
   --color-emerald-soft: var(--emerald-soft);
   --color-spiritual: var(--spiritual);
