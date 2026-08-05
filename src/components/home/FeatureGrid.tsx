@@ -3,16 +3,16 @@ import { BookOpen, Compass, CalendarDays, Sparkles, Clock, Hand, NotebookPen, Tr
 import { haptic } from "@/lib/haptics";
 
 const FEATURES = [
-  { to: "/quran", title: "القرآن الكريم", desc: "قراءة وتفسير وبحث", icon: BookOpen },
-  { to: "/athkar", title: "الأذكار والأدعية", desc: "صباح ومساء وأدعية", icon: Sparkles },
-  { to: "/athkar/tasbih", title: "المسبحة", desc: "عداد تسبيح تفاعلي", icon: Hand },
-  { to: "/prayer", title: "مواقيت الصلاة", desc: "حسب موقعك", icon: Clock },
-  { to: "/qibla", title: "اتجاه القبلة", desc: "بوصلة تفاعلية", icon: Compass },
-  { to: "/calendar", title: "التقويم الهجري", desc: "تحويل ومناسبات", icon: CalendarDays },
-  { to: "/khatmah", title: "ختمة القرآن", desc: "تقدّمك وبطاقة مشاركة", icon: Trophy },
-  { to: "/journal", title: "المفكرة الروحانية", desc: "خواطر محفوظة محليًا", icon: NotebookPen },
-  { to: "/fasting", title: "متابعة الصيام", desc: "سجّل أيام صيامك", icon: Sun },
-  { to: "/location", title: "اختيار الموقع", desc: "المدينة والمواقيت", icon: MapPin },
+  { to: "/quran", title: "القرآن الكريم", desc: "قراءة وتفسير وبحث", icon: BookOpen, tint: "var(--olive)" },
+  { to: "/athkar", title: "الأذكار والأدعية", desc: "صباح ومساء وأدعية", icon: Sparkles, tint: "var(--gold)" },
+  { to: "/athkar/tasbih", title: "المسبحة", desc: "عداد تسبيح تفاعلي", icon: Hand, tint: "var(--emerald)" },
+  { to: "/prayer", title: "مواقيت الصلاة", desc: "حسب موقعك", icon: Clock, tint: "var(--sky)" },
+  { to: "/qibla", title: "اتجاه القبلة", desc: "بوصلة تفاعلية", icon: Compass, tint: "var(--rose)" },
+  { to: "/calendar", title: "التقويم الهجري", desc: "تحويل ومناسبات", icon: CalendarDays, tint: "var(--spiritual)" },
+  { to: "/khatmah", title: "ختمة القرآن", desc: "تقدّمك وبطاقة مشاركة", icon: Trophy, tint: "var(--gold)" },
+  { to: "/journal", title: "المفكرة الروحانية", desc: "خواطر محفوظة محليًا", icon: NotebookPen, tint: "var(--olive-soft)" },
+  { to: "/fasting", title: "متابعة الصيام", desc: "سجّل أيام صيامك", icon: Sun, tint: "var(--gold-soft)" },
+  { to: "/location", title: "اختيار الموقع", desc: "المدينة والمواقيت", icon: MapPin, tint: "var(--sky)" },
 ] as const;
 
 export function FeatureGrid() {
@@ -31,7 +31,14 @@ export function FeatureGrid() {
               borderRadius: '16px'
             }}
           >
-            <span className="flex size-10 items-center justify-center rounded-xl bg-secondary text-primary">
+            <span
+              className="flex size-10 items-center justify-center rounded-xl"
+              style={{
+                background: `color-mix(in oklab, ${f.tint} 22%, transparent)`,
+                color: f.tint,
+                boxShadow: `0 6px 18px -12px ${f.tint}`,
+              }}
+            >
               <Icon className="size-5" />
             </span>
             <span className="text-sm font-bold">{f.title}</span>
