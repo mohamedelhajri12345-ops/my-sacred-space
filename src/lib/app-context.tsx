@@ -9,7 +9,7 @@ export type AlertKind = "silent" | "beep" | "adhan";
 export type PrayerAdjustments = Partial<Record<PrayerKey, number>>;
 
 export type Settings = {
-  theme: "light" | "dark";
+  theme: "light" | "dark" | "reading";
   method: MethodKey;
   autoMethod: boolean;
   notificationsEnabled: boolean;
@@ -115,7 +115,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const root = document.documentElement;
-    root.classList.toggle("dark", settings.theme === "dark");
+    root.classList.toggle("dark", settings.theme === "dark" || settings.theme === "reading");
+    root.classList.toggle("reading-mode", settings.theme === "reading");
     root.style.setProperty("--app-font-scale", String(settings.fontScale));
   }, [settings.theme, settings.fontScale]);
 

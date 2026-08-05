@@ -13,6 +13,7 @@ import {
   Sun,
   Clock3,
   Star,
+  Eye,
 } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { useApp } from "@/lib/app-context";
@@ -359,6 +360,7 @@ function SettingsPage() {
             {([
               { key: "light", label: "نهاري", icon: Sun },
               { key: "dark", label: "ليلي", icon: Moon },
+              { key: "reading", label: "قراءة", icon: Eye },
             ] as const).map((t) => (
               <button
                 key={t.key}
@@ -377,6 +379,13 @@ function SettingsPage() {
               </button>
             ))}
           </div>
+          <p className="text-[11px] text-muted-foreground">
+            {settings.theme === "reading" 
+              ? "وضع القراءة: خلفية كحلي داكن مع نص ذهبي للقراءة المريحة"
+              : settings.theme === "dark"
+              ? "الوضع الليلي: ألوان داكنة مع زخارف متحركة"
+              : "الوضع النهاري: ألوان فاتحة ومشرقة"}
+          </p>
           <Toggle
             label="الخلفية المتحركة"
             hint="زخارف إسلامية تتحرك ببطء خلف المحتوى"

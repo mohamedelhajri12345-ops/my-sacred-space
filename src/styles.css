@@ -213,6 +213,51 @@
   background-image: var(--gradient-spiritual);
 }
 
+/* ===== وضع القراءة الليلي ===== */
+.reading-mode {
+  /* خلفية كحلي داكن جداً */
+  --background: oklch(0.08 0.025 230);
+  --foreground: oklch(0.88 0.015 220);
+  --card: oklch(0.12 0.025 230);
+  --card-foreground: oklch(0.88 0.015 220);
+  --popover: oklch(0.12 0.025 230);
+  --popover-foreground: oklch(0.88 0.015 220);
+  --primary: oklch(0.55 0.12 165);
+  --primary-foreground: oklch(0.12 0.025 230);
+  --secondary: oklch(0.22 0.035 220);
+  --secondary-foreground: oklch(0.88 0.015 220);
+  --muted: oklch(0.18 0.028 215);
+  --muted-foreground: oklch(0.65 0.02 220);
+  /* ذهبي فاتح للنص */
+  --accent: oklch(0.82 0.10 85);
+  --accent-foreground: oklch(0.08 0.025 230);
+  --destructive: oklch(0.65 0.16 25);
+  --destructive-foreground: oklch(0.96 0.008 70);
+  --border: oklch(0.35 0.03 220 / 30%);
+  --input: oklch(0.35 0.03 220 / 35%);
+  --ring: oklch(0.82 0.10 85);
+  --gold: oklch(0.82 0.10 85);
+  --gold-soft: oklch(0.70 0.09 80);
+  --gold-foreground: oklch(0.08 0.025 230);
+  --gradient-warm: linear-gradient(140deg, oklch(0.15 0.03 225), oklch(0.18 0.035 235));
+  --gradient-gold: linear-gradient(135deg, oklch(0.85 0.09 88), oklch(0.75 0.10 78));
+  --shadow-soft: 0 18px 40px -24px oklch(0 0 0 / 0.5);
+  --shadow-glow: 0 0 40px -6px oklch(0.82 0.10 85 / 0.4);
+  --sidebar: oklch(0.12 0.025 230);
+  --sidebar-foreground: oklch(0.88 0.015 220);
+  --sidebar-primary: oklch(0.55 0.12 165);
+  --sidebar-primary-foreground: oklch(0.12 0.025 230);
+  --sidebar-accent: oklch(0.22 0.035 220);
+  --sidebar-accent-foreground: oklch(0.88 0.015 220);
+  --sidebar-border: oklch(0.35 0.03 220 / 30%);
+  --sidebar-ring: oklch(0.82 0.10 85);
+  --chart-1: oklch(0.82 0.10 85);
+  --chart-2: oklch(0.55 0.12 165);
+  --chart-3: oklch(0.65 0.06 225);
+  --chart-4: oklch(0.55 0.12 165);
+  --chart-5: oklch(0.65 0.08 25);
+}
+
 @utility surface-card {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 100%);
   backdrop-filter: blur(16px) saturate(180%);
