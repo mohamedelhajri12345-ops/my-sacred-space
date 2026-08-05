@@ -16,7 +16,7 @@ export function NextPrayerCard() {
   if (isLoading) {
     return (
       <Link to="/prayer" className="press animate-rise block">
-        <div className="gradient-night relative overflow-hidden rounded-3xl p-5 text-cream shadow-[var(--shadow-soft)]">
+        <div className="gradient-night relative overflow-hidden rounded-3xl p-5 text-cream" style={{ boxShadow: '0 12px 40px -12px rgba(0, 0, 0, 0.35), 0 0 20px rgba(212, 175, 55, 0.15)' }}>
           <div className="flex flex-col items-center justify-center py-4">
             <Loader2 className="size-8 animate-spin text-gold mb-3" />
             <p className="text-sm opacity-85">جارٍ تحميل مواقيت الصلاة...</p>
@@ -30,7 +30,7 @@ export function NextPrayerCard() {
   if (error || !next) {
     return (
       <Link to="/prayer" className="press animate-rise block">
-        <div className="gradient-night relative overflow-hidden rounded-3xl p-5 text-cream shadow-[var(--shadow-soft)]">
+        <div className="gradient-night relative overflow-hidden rounded-3xl p-5 text-cream" style={{ boxShadow: '0 12px 40px -12px rgba(0, 0, 0, 0.35), 0 0 20px rgba(212, 175, 55, 0.15)' }}>
           <div className="flex flex-col items-center justify-center py-4">
             <AlertCircle className="size-8 text-gold mb-3" />
             <p className="text-sm opacity-85">تعذر حساب المواقيت</p>
@@ -44,7 +44,10 @@ export function NextPrayerCard() {
   // حالة النجاح - عرض بيانات الصلاة
   return (
     <Link to="/prayer" className="press animate-rise block">
-      <div className="gradient-night relative overflow-hidden rounded-3xl p-5 text-cream shadow-[var(--shadow-soft)]" style={{ borderRadius: '16px' }}>
+      <div className="gradient-night relative overflow-hidden rounded-3xl p-5 text-cream" style={{ 
+        boxShadow: '0 12px 40px -12px rgba(0, 0, 0, 0.35), 0 0 30px rgba(212, 175, 55, 0.2)',
+        borderRadius: '16px'
+      }}>
         <div className="absolute -left-8 -top-10 size-36 rounded-full bg-gold/20 blur-2xl" />
         <div className="relative">
           <div className="flex items-center justify-between text-xs opacity-80">
@@ -55,10 +58,10 @@ export function NextPrayerCard() {
           </div>
           <p className="mt-4 text-sm opacity-85">الصلاة القادمة</p>
           <div className="mt-1 flex items-end justify-between">
-            <h2 className="text-4xl font-bold text-gradient-gold" style={{ fontFamily: 'Amiri, serif' }}>{next?.label ?? "..."}</h2>
-            <span className="text-lg font-semibold">{next?.date ? formatTime(next.date) : "--:--"}</span>
+            <h2 className="text-4xl font-bold text-gradient-gold drop-shadow-lg" style={{ fontFamily: 'Amiri, serif' }}>{next?.label ?? "..."}</h2>
+            <span className="text-lg font-semibold drop-shadow-md">{next?.date ? formatTime(next.date) : "--:--"}</span>
           </div>
-          <p className="mt-3 text-center font-mono text-3xl tracking-widest">
+          <p className="mt-3 text-center font-mono text-3xl tracking-widest drop-shadow-md">
             {formatCountdown(remaining)}
           </p>
           {inKhushuWindow && (
