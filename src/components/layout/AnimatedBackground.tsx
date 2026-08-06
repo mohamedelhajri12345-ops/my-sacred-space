@@ -3,9 +3,15 @@
  * جزيئات ذهبية متحركة مع تأثيرات ضوئية دافئة
  */
 
+import { useEffect, useMemo, useState } from "react";
+
 export function AnimatedBackground() {
+  // نولّد العناصر العشوائية بعد الترطيب فقط لتفادي اختلاف SSR
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   // Generate floating particles
-  const particles = Array.from({ length: 30 }, (_, i) => ({
+  const particles = useMemo(() => Array.from({ length: 30 }, (_, i) => ({
     id: i,
     left: Math.random() * 100,
     top: Math.random() * 100,
@@ -13,10 +19,10 @@ export function AnimatedBackground() {
     duration: Math.random() * 15 + 20,
     delay: Math.random() * 10,
     opacity: Math.random() * 0.4 + 0.2,
-  }));
+  })), []);
 
   // Light orbs
-  const orbs = Array.from({ length: 8 }, (_, i) => ({
+  const orbs = useMemo(() => Array.from({ length: 8 }, (_, i) => ({
     id: i,
     left: Math.random() * 100,
     top: Math.random() * 100,
@@ -24,7 +30,7 @@ export function AnimatedBackground() {
     duration: Math.random() * 20 + 25,
     delay: Math.random() * 8,
     hue: 35 + Math.random() * 20, // Warm gold/amber hues
-  }));
+  })), []);
 
   return (
     <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
@@ -35,7 +41,7 @@ export function AnimatedBackground() {
       <div className="absolute inset-0 bg-gradient-to-t from-[color-mix(in_oklab,var(--background)_40%,transparent)] via-transparent to-transparent" />
       
       {/* كرات ضوئية دافئة */}
-      {orbs.map((orb) => (
+      {mounted && orbs.map((orb) => (
         <div
           key={`orb-${orb.id}`}
           className="absolute rounded-full blur-3xl"
