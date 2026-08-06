@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Search, BookMarked, Loader2, BookOpen, Sparkles, ChevronLeft, BookText } from "lucide-react";
+import { Search, BookMarked, Loader2, BookOpen, Sparkles, ChevronLeft, BookText, Play, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { loadQuran, searchQuran, toArabicNumber, type Bookmark, type ReadingProgress } from "@/lib/quran";
 import { useLocalStorage } from "@/lib/use-local-storage";
