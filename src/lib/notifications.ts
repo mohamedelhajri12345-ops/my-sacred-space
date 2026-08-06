@@ -251,3 +251,26 @@ export function playAlertSound(kind: AlertKind): void {
 export function previewAlertSound(kind: AlertKind): void {
   playAlertSound(kind === "silent" ? "beep" : kind);
 }
+/** جدولة إشعارات الصلاة داخل الـ Service Worker لتعمل والتطبيق مغلق أو الشاشة مقفلة. */
+export async function schedulePrayersInServiceWorker(
+  prayers: { label: string; date: Date }[],
+  reminderMinutes: number,
+): Promise<void> {
+  if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) return;
+  if (!notificationsSupported() || Notification.permission !== "granted") return;
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    const now = Date.now();
+    for (const p of prayers) {
+      if (!p.date || p.date.getTime() <= now) continue;
+      reg.active?.postMessage({
+        type: "SCHEDULE_PRAYER_NOTIFICATION",
+        prayerName: p.label,
+        prayerTime: p.date.toISOString(),
+        reminderMinutes,
+      });
+    }
+  } catch {
+    /* ignore */
+  }
+}
