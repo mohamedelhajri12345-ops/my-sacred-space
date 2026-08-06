@@ -85,7 +85,7 @@ function TypingIndicator() {
 }
 
 function SourcesSection({ sources }: { sources: Source[] }) {
-  const [expanded, setExpanded] useState(false);
+  const [expanded, setExpanded] = useState(false);
   
   if (sources.length === 0) return null;
   
