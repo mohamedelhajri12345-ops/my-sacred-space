@@ -1,18 +1,21 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, lazy, Suspense } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Loader2,
   Pause,
   Play,
   Repeat,
-  ChevronUp,
-  ChevronDown,
   Volume2,
   VolumeX,
-  Minimize2,
-  Maximize2,
   ListMusic,
-  User
+  User,
+  ChevronRight,
+  SkipBack,
+  SkipForward,
+  X,
+  Bookmark,
+  Share2,
+  Settings
 } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -22,6 +25,7 @@ import {
   loadQuran,
   surahAudioUrl,
   toArabicNumber,
+  RECITERS,
   type ReadingProgress,
 } from "@/lib/quran";
 import { useLocalStorage } from "@/lib/use-local-storage";
@@ -34,17 +38,18 @@ export function SurahReader({
 }: {
   surahId: number;
 }) {
-  const { settings, online } = useApp();
+  const { settings, online, updateSettings } = useApp();
   const [isPlaying, setIsPlaying] = useState(false);
   const [buffering, setBuffering] = useState(false);
   const [position, setPosition] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isLooping, setIsLooping] = useState(false);
-  const [isMinimized, setIsMinimized] = useState(false);
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
+  const [showReciterMenu, setShowReciterMenu] = useState(false);
   const [, setProgress] = useLocalStorage<ReadingProgress | null>("islamic:progress", null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [currentSource, setCurrentSource] = useState(0);
 
   const { data, isLoading } = useQuery({ queryKey: ["quran"], queryFn: loadQuran, staleTime: Infinity });
 
@@ -74,37 +79,57 @@ export function SurahReader({
     return audio;
   }, [volume]);
 
-  const playSurah = useCallback(() => {
-    if (!surah) return;
+  // Try different audio sources with fallback
+  const tryPlayWithFallback = useCallback((surahNum: number, sourceIndex: number = 0) => {
     if (!online) {
       toast.error("التلاوة الصوتية تحتاج اتصالًا بالإنترنت");
       return;
     }
+
     const audio = ensureAudio();
-    const src = surahAudioUrl(settings.reciter, surahId);
+    const sources = [
+      surahAudioUrl(settings.reciter, surahNum),
+      `https://everyayah.com/data/${reciter.dir}/${String(surahNum).padStart(3, '0')}.mp3`,
+      `https://server8.mp3quran.net/${reciter.dir}/${String(surahNum).padStart(3, '0')}.mp3`,
+    ];
+
+    if (sourceIndex >= sources.length) {
+      toast.error("تعذّر تحميل التلاوة، جرّب قارئًا آخر");
+      setBuffering(false);
+      return;
+    }
+
     setBuffering(true);
     setPosition(0);
     setDuration(0);
-    audio.src = src;
+    audio.src = sources[sourceIndex];
     audio.load();
-    
-    const playPromise = audio.play();
-    if (playPromise !== undefined) {
-      playPromise.then(() => {
+    setCurrentSource(sourceIndex);
+
+    audio.oncanplaythrough = () => {
+      setBuffering(false);
+      audio.play().then(() => {
         setIsPlaying(true);
-        markRead(surah.c);
-      }).catch((err: unknown) => {
-        setIsPlaying(false);
-        setBuffering(false);
-        const name = err instanceof Error ? err.name : "";
-        if (name === "NotAllowedError") {
+        markRead(surah?.c ?? 0);
+      }).catch((err) => {
+        if (err.name === "NotAllowedError") {
           toast.error("اضغط زر التشغيل مرة أخرى للسماح بتشغيل الصوت");
         } else {
-          toast.error("تعذّر تحميل ملف التلاوة، جرّب قارئًا آخر");
+          // Try next source
+          tryPlayWithFallback(surahNum, sourceIndex + 1);
         }
       });
-    }
-  }, [ensureAudio, markRead, online, settings.reciter, surah, surahId]);
+    };
+
+    audio.onerror = () => {
+      tryPlayWithFallback(surahNum, sourceIndex + 1);
+    };
+  }, [ensureAudio, markRead, online, reciter.dir, settings.reciter, surah?.c]);
+
+  const playSurah = useCallback(() => {
+    if (!surah) return;
+    tryPlayWithFallback(surahId, 0);
+  }, [surah, surahId, tryPlayWithFallback]);
 
   useEffect(() => {
     const audio = ensureAudio();
@@ -130,7 +155,6 @@ export function SurahReader({
     const onError = () => {
       setIsPlaying(false);
       setBuffering(false);
-      toast.error("تعذّر تشغيل التلاوة، جرّب قارئًا آخر");
     };
     audio.addEventListener("timeupdate", onTime);
     audio.addEventListener("loadedmetadata", onMeta);
@@ -185,13 +209,6 @@ export function SurahReader({
     setIsLooping(!isLooping);
   };
 
-  const handleVolumeChange = (value: number) => {
-    const audio = audioRef.current;
-    setVolume(value);
-    setIsMuted(value === 0);
-    if (audio) audio.volume = value;
-  };
-
   const toggleMute = () => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -210,6 +227,15 @@ export function SurahReader({
     if (!audio || !Number.isFinite(audio.duration)) return;
     audio.currentTime = Math.max(0, Math.min(audio.duration, audio.currentTime + seconds));
     haptic("light");
+  };
+
+  const selectReciter = (reciterId: string) => {
+    haptic("medium");
+    updateSettings({ reciter: reciterId });
+    setShowReciterMenu(false);
+    if (isPlaying) {
+      playSurah();
+    }
   };
 
   if (isLoading || !surah) {
@@ -250,10 +276,13 @@ export function SurahReader({
             </p>
             <h2 className="font-display text-3xl font-bold mt-1">{surah.n}</h2>
           </div>
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <User className="size-4" />
-            <span className="text-xs">{reciter.name}</span>
-          </div>
+          <button
+            onClick={() => setShowReciterMenu(!showReciterMenu)}
+            className="card-glass flex items-center gap-2 rounded-xl px-3 py-2 text-xs"
+          >
+            <User className="size-4 text-muted-foreground" />
+            <span className="text-muted-foreground">{reciter.name}</span>
+          </button>
         </div>
         
         {surahId !== 1 && surahId !== 9 && (
@@ -262,6 +291,41 @@ export function SurahReader({
           </p>
         )}
       </motion.div>
+
+      {/* قائمة القراء */}
+      <AnimatePresence>
+        {showReciterMenu && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="card-glass fixed left-4 right-4 top-24 z-50 mx-auto max-w-xl rounded-2xl p-4 shadow-xl"
+          >
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="font-bold">اختر القارئ</h3>
+              <button onClick={() => setShowReciterMenu(false)} className="text-muted-foreground hover:text-foreground">
+                <X className="size-5" />
+              </button>
+            </div>
+            <div className="max-h-80 space-y-1 overflow-y-auto">
+              {RECITERS.map((r) => (
+                <button
+                  key={r.id}
+                  onClick={() => selectReciter(r.id)}
+                  className={cn(
+                    "w-full rounded-xl px-4 py-3 text-right text-sm transition-all",
+                    settings.reciter === r.id
+                      ? "bg-primary/10 text-primary"
+                      : "hover:bg-secondary/50"
+                  )}
+                >
+                  {r.name}
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* القرآن */}
       <div className="rounded-2xl border border-border/50 bg-card p-6">
@@ -289,7 +353,7 @@ export function SurahReader({
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 100, opacity: 0 }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed bottom-24 left-4 right-4 z-50 mx-auto max-w-xl rounded-2xl border border-border/50 bg-card/95 backdrop-blur-xl shadow-2xl"
+            className="card-glass fixed bottom-24 left-4 right-4 z-50 mx-auto max-w-xl rounded-2xl shadow-2xl"
           >
             {/* شريط التقدم */}
             <div 
@@ -313,9 +377,9 @@ export function SurahReader({
                   <motion.div
                     animate={{ rotate: isPlaying ? 360 : 0 }}
                     transition={{ duration: 3, repeat: isPlaying ? Infinity : 0, ease: "linear" }}
-                    className="flex size-12 items-center justify-center rounded-xl bg-primary/10"
+                    className="flex size-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-teal text-primary-foreground"
                   >
-                    <ListMusic className="size-6 text-primary" />
+                    <ListMusic className="size-6" />
                   </motion.div>
                   <div>
                     <p className="text-sm font-bold">{surah.n}</p>
@@ -331,15 +395,15 @@ export function SurahReader({
               </div>
 
               {/* أزرار التحكم */}
-              <div className="flex items-center justify-center gap-4">
+              <div className="flex items-center justify-center gap-3">
                 <motion.button
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={() => skip(-10)}
-                  className="flex size-10 items-center justify-center rounded-full bg-secondary text-muted-foreground hover:bg-secondary/80"
+                  className="flex size-11 items-center justify-center rounded-full bg-secondary text-muted-foreground hover:bg-secondary/80"
                   aria-label="تراجع 10 ثوان"
                 >
-                  <span className="text-xs font-bold">-10</span>
+                  <SkipBack className="size-5" />
                 </motion.button>
                 
                 <motion.button
@@ -347,12 +411,12 @@ export function SurahReader({
                   whileTap={{ scale: 0.9 }}
                   onClick={toggleLoop}
                   className={cn(
-                    "flex size-10 items-center justify-center rounded-full transition-all",
+                    "flex size-11 items-center justify-center rounded-full transition-all",
                     isLooping ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:bg-secondary/80"
                   )}
                   aria-label="تكرار"
                 >
-                  <Repeat className="size-4" />
+                  <Repeat className="size-5" />
                 </motion.button>
                 
                 <motion.button
@@ -375,20 +439,20 @@ export function SurahReader({
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={() => skip(10)}
-                  className="flex size-10 items-center justify-center rounded-full bg-secondary text-muted-foreground hover:bg-secondary/80"
+                  className="flex size-11 items-center justify-center rounded-full bg-secondary text-muted-foreground hover:bg-secondary/80"
                   aria-label="تقديم 10 ثوان"
                 >
-                  <span className="text-xs font-bold">+10</span>
+                  <SkipForward className="size-5" />
                 </motion.button>
                 
                 <motion.button
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={toggleMute}
-                  className="flex size-10 items-center justify-center rounded-full bg-secondary text-muted-foreground hover:bg-secondary/80"
+                  className="flex size-11 items-center justify-center rounded-full bg-secondary text-muted-foreground hover:bg-secondary/80"
                   aria-label={isMuted ? "تشغيل الصوت" : "كتم الصوت"}
                 >
-                  {isMuted ? <VolumeX className="size-4" /> : <Volume2 className="size-4" />}
+                  {isMuted ? <VolumeX className="size-5" /> : <Volume2 className="size-5" />}
                 </motion.button>
               </div>
             </div>

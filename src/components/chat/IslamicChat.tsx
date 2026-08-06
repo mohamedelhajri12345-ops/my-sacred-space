@@ -16,12 +16,21 @@ import {
   ChevronDown, 
   ChevronUp,
   RefreshCw,
-  AlertTriangle
+  AlertTriangle,
+  Copy,
+  Check,
+  StopCircle,
+  RotateCcw,
+  Trash2
 } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { useApp } from "@/lib/app-context";
 import { haptic } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 import { getIslamicAnswer, formatSources, type Source } from "@/lib/islamic-ai";
+import { useLocalStorage } from "@/lib/use-local-storage";
+import { motion, AnimatePresence } from "framer-motion";
 
 type ChatMessage = {
   id: string;
@@ -44,17 +53,34 @@ const SUGGESTIONS = [
   "كيف أتوب توبة نصوح؟",
 ];
 
+// Animated typing indicator with modern design
 function TypingIndicator() {
   return (
-    <div className="flex items-end gap-2">
-      <div className="flex items-center gap-1 rounded-2xl border border-border bg-card px-4 py-3">
-        <div className="flex gap-1">
-          <span className="size-2 rounded-full bg-[var(--gold)] animate-bounce" style={{ animationDelay: '0ms' }} />
-          <span className="size-2 rounded-full bg-[var(--gold)] animate-bounce" style={{ animationDelay: '150ms' }} />
-          <span className="size-2 rounded-full bg-[var(--gold)] animate-bounce" style={{ animationDelay: '300ms' }} />
+    <motion.div 
+      className="flex items-end gap-2"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+    >
+      <div className="card-glass rounded-2xl px-4 py-3">
+        <div className="flex gap-1.5">
+          <motion.span 
+            className="size-2.5 rounded-full bg-[var(--gold)]" 
+            animate={{ y: [0, -5, 0] }}
+            transition={{ duration: 0.6, repeat: Infinity, delay: 0 }}
+          />
+          <motion.span 
+            className="size-2.5 rounded-full bg-[var(--gold)]" 
+            animate={{ y: [0, -5, 0] }}
+            transition={{ duration: 0.6, repeat: Infinity, delay: 0.15 }}
+          />
+          <motion.span 
+            className="size-2.5 rounded-full bg-[var(--gold)]" 
+            animate={{ y: [0, -5, 0] }}
+            transition={{ duration: 0.6, repeat: Infinity, delay: 0.3 }}
+          />
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -179,31 +205,77 @@ function FooterDisclaimer() {
   );
 }
 
-function MessageBubble({ message }: { message: ChatMessage }) {
+function MessageBubble({ message, onCopy, onRegenerate }: { message: ChatMessage; onCopy?: (text: string) => void; onRegenerate?: () => void }) {
+  const [copied, setCopied] = useState(false);
+  
+  const handleCopy = () => {
+    navigator.clipboard.writeText(message.text);
+    setCopied(true);
+    onCopy?.(message.text);
+    haptic("light");
+    setTimeout(() => setCopied(false), 2000);
+  };
+  
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
       className={cn("flex", message.role === "user" ? "justify-start" : "justify-end")}
     >
       <div
         className={cn(
-          "max-w-[88%] rounded-2xl px-4 py-3 leading-relaxed",
+          "max-w-[85%] rounded-2xl px-4 py-3 leading-relaxed",
           message.role === "user"
-            ? "gradient-spiritual text-primary-foreground"
+            ? "bg-gradient-to-br from-primary to-teal text-primary-foreground"
             : message.error 
-              ? "border border-red-500/30 bg-red-500/10 text-destructive"
-              : "border border-border bg-card text-card-foreground shadow-[var(--shadow-soft)]"
+              ? "border border-destructive/30 bg-destructive/10 text-destructive"
+              : "card-glass text-card-foreground"
         )}
       >
         {message.role === "assistant" && !message.error && (
-          <div className="mb-2 flex items-center gap-2 border-b border-border/50 pb-2">
-            <Moon className="size-4 text-[var(--gold)]" />
-            <span className="text-[10px] font-medium text-[var(--gold)]">المساعد الإسلامي</span>
-            {message.isStreaming && (
-              <RefreshCw className="size-3 animate-spin text-[var(--gold)]" />
+          <div className="mb-3 flex items-center justify-between border-b border-border/50 pb-2">
+            <div className="flex items-center gap-2">
+              <Moon className="size-4 text-[var(--gold)]" />
+              <span className="text-xs font-medium text-[var(--gold)]">المساعد الإسلامي</span>
+              {message.isStreaming && (
+                <RefreshCw className="size-3 animate-spin text-[var(--gold)]" />
+              )}
+            </div>
+            {message.text && !message.isStreaming && (
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={handleCopy}
+                  className="flex size-7 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary/50 transition-colors"
+                  title="نسخ"
+                >
+                  {copied ? <Check className="size-3.5 text-green-500" /> : <Copy className="size-3.5" />}
+                </button>
+                {onRegenerate && (
+                  <button
+                    onClick={onRegenerate}
+                    className="flex size-7 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary/50 transition-colors"
+                    title="إعادة توليد"
+                  >
+                    <RotateCcw className="size-3.5" />
+                  </button>
+                )}
+              </div>
             )}
           </div>
         )}
-        <div className="whitespace-pre-wrap text-sm">{message.text}</div>
+        
+        {/* Render with Markdown for assistant messages */}
+        {message.role === "assistant" && !message.error ? (
+          <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:font-display prose-headings:text-base prose-p:text-sm prose-p:leading-relaxed prose-li:text-sm prose-strong:text-foreground">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {message.text}
+            </ReactMarkdown>
+          </div>
+        ) : (
+          <div className="whitespace-pre-wrap text-sm">{message.text}</div>
+        )}
+        
         {!message.error && message.sources && message.sources.length > 0 && (
           <SourcesSection sources={message.sources} />
         )}
@@ -211,7 +283,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
           <RelatedTopics topics={message.relatedTopics} />
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -220,7 +292,9 @@ export function IslamicChat() {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([
+  
+  // حفظ المحادثات محليًا
+  const [messages, setMessages] = useLocalStorage<ChatMessage[]>("islamic:chat-messages", [
     {
       id: "welcome",
       role: "assistant",
@@ -238,9 +312,13 @@ export function IslamicChat() {
 ⚠️ تنبيه: هذه الميزة تحتاج اتصالًا بالإنترنت.`,
     },
   ]);
+  
   const endRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  
+  // حالة المحادثة الأخيرة لإعادة التوليد
+  const [lastUserMessage, setLastUserMessage] = useState<string>("");
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });

@@ -1,12 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/layout/AppShell";
 import { NextPrayerCard } from "@/components/prayer/NextPrayerCard";
-import { FeatureGrid } from "@/components/home/FeatureGrid";
-import { SpiritualStats } from "@/components/home/SpiritualStats";
-import { upcomingEvents, formatGregorianAr } from "@/lib/hijri";
-import { Star, Moon, BookOpen, Sparkles, Sun, Sunset } from "lucide-react";
-import { motion } from "framer-motion";
+import { upcomingEvents, formatGregorianAr, formatHijri } from "@/lib/hijri";
+import { Star, Moon, BookOpen, Sparkles, Sun, Sunset, SunMoon, Compass, Calendar, Library, HandHeart, Play, Pause, ChevronLeft } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { useLocalStorage } from "@/lib/use-local-storage";
+import { useEffect, useState } from "react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -23,29 +23,30 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-// آية اليوم
 const AYAH_OF_DAY = {
   text: "أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ",
   source: "سورة الرعد",
   verse: "28"
 };
 
-// خبر اليوم
 const HADITH_OF_DAY = {
   text: "قال رسول الله ﷺ: إنَّ اللهَ تعالى يقول: أنا عندَ ظنِّ عبدي بي، وأنا معَه إذا ذكَرَني",
   source: "رواه البخاري ومسلم"
 };
 
-function HeroSection() {
+function GreetingSection() {
   const hour = new Date().getHours();
   const today = new Date();
   
-  const greeting = 
-    hour < 5 ? { icon: Moon, text: "قيام مبارك", gradient: "from-indigo-500 to-purple-600" } :
-    hour < 12 ? { icon: Sun, text: "صباح النور", gradient: "from-amber-400 to-orange-500" } :
-    hour < 17 ? { icon: Sunset, text: "طاب نهارك", gradient: "from-amber-500 to-yellow-400" } :
-    hour < 20 ? { icon: Sunset, text: "مساء الخير", gradient: "from-orange-500 to-amber-600" } :
-    { icon: Moon, text: "طابت ليلتك", gradient: "from-indigo-600 to-purple-700" };
+  const greeting = hour < 5 
+    ? { icon: Moon, text: "قيام مبارك", gradient: "from-indigo-600 via-purple-600 to-indigo-700" }
+    : hour < 12 
+    ? { icon: Sun, text: "صباح النور", gradient: "from-amber-400 via-orange-400 to-amber-500" }
+    : hour < 17 
+    ? { icon: SunMoon, text: "طاب نهارك", gradient: "from-orange-400 via-amber-400 to-yellow-400" }
+    : hour < 20 
+    ? { icon: Sunset, text: "مساء الخير", gradient: "from-orange-500 via-amber-500 to-orange-600" }
+    : { icon: Moon, text: "طابت ليلتك", gradient: "from-indigo-700 via-purple-700 to-indigo-800" };
   
   const GreetingIcon = greeting.icon;
   
@@ -53,42 +54,49 @@ function HeroSection() {
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="relative overflow-hidden rounded-3xl bg-gradient-to-br p-6 text-white"
-      style={{ background: 'linear-gradient(135deg, var(--primary) 0%, var(--teal) 50%, var(--sky) 100%)' }}
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      className="relative overflow-hidden rounded-3xl"
     >
-      {/* خلفية زخرفية */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute -right-10 -top-10 size-40 rounded-full bg-white" />
-        <div className="absolute -bottom-5 -left-5 size-24 rounded-full bg-white" />
-        <div className="absolute right-1/4 top-1/4 size-16 rounded-full bg-white" />
+      {/* Background with gradient */}
+      <div className={cn(
+        "absolute inset-0 bg-gradient-to-br p-6 text-white",
+        greeting.gradient
+      )} />
+      
+      {/* Decorative elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -right-12 -top-12 size-48 rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute -bottom-8 -left-8 size-32 rounded-full bg-white/10 blur-2xl" />
+        <div className="absolute right-1/3 top-1/4 size-20 rounded-full bg-white/5 blur-xl" />
       </div>
       
+      {/* Content */}
       <div className="relative z-10">
-        <div className="flex items-center gap-3 mb-4">
+        <div className="flex items-center gap-4 mb-5">
           <motion.div 
-            animate={{ rotate: [0, 10, -10, 0] }}
-            transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
-            className="flex size-12 items-center justify-center rounded-2xl bg-white/20 backdrop-blur"
+            animate={{ scale: [1, 1.1, 1] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            className="flex size-14 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md"
           >
-            <GreetingIcon className="size-6" />
+            <GreetingIcon className="size-7" />
           </motion.div>
           <div>
-            <p className="text-white/80 text-sm">{formatGregorianAr(today)}</p>
+            <p className="text-white/80 text-sm font-medium">{formatHijri(today)}</p>
             <h2 className="text-2xl font-bold">{greeting.text}</h2>
           </div>
         </div>
         
-        <div className="flex gap-3">
-          <motion.div 
-            whileHover={{ scale: 1.02 }}
-            className="flex-1 rounded-2xl bg-white/15 backdrop-blur p-4"
-          >
-            <p className="text-xs text-white/70 mb-1">آية اليوم</p>
-            <p className="font-display text-lg leading-relaxed">{AYAH_OF_DAY.text}</p>
-            <p className="text-xs text-white/60 mt-2">{AYAH_OF_DAY.source} — الآية {AYAH_OF_DAY.verse}</p>
-          </motion.div>
-        </div>
+        <motion.div 
+          whileHover={{ scale: 1.02 }}
+          className="rounded-2xl bg-white/15 backdrop-blur-md p-4"
+        >
+          <div className="flex items-center gap-2 mb-2">
+            <BookOpen className="size-4 text-white/70" />
+            <p className="text-xs text-white/70">آية اليوم</p>
+          </div>
+          <p className="font-display text-xl leading-relaxed">{AYAH_OF_DAY.text}</p>
+          <p className="text-xs text-white/60 mt-3">{AYAH_OF_DAY.source} — الآية {AYAH_OF_DAY.verse}</p>
+        </motion.div>
       </div>
     </motion.div>
   );
@@ -96,10 +104,10 @@ function HeroSection() {
 
 function QuickActions() {
   const actions = [
-    { to: "/quran", icon: BookOpen, label: "القرآن الكريم", color: "bg-emerald-500" },
-    { to: "/athkar", icon: Moon, label: "الأذكار", color: "bg-indigo-500" },
-    { to: "/athkar/tasbih", icon: Sparkles, label: "السبحة", color: "bg-amber-500" },
-    { to: "/journal", icon: Star, label: "المفكرة", color: "bg-rose-500" },
+    { to: "/quran", icon: BookOpen, label: "القرآن", color: "bg-emerald-500", gradient: "from-emerald-500 to-emerald-600" },
+    { to: "/athkar", icon: Moon, label: "الأذكار", color: "bg-violet-500", gradient: "from-violet-500 to-purple-600" },
+    { to: "/athkar/tasbih", icon: Sparkles, label: "السبحة", color: "bg-amber-500", gradient: "from-amber-500 to-orange-500" },
+    { to: "/prayer", icon: Compass, label: "الصلاة", color: "bg-sky-500", gradient: "from-sky-500 to-blue-500" },
   ];
   
   return (
@@ -114,19 +122,57 @@ function QuickActions() {
           key={action.to}
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.1 + index * 0.05 }}
+          transition={{ delay: 0.15 + index * 0.05, type: "spring", stiffness: 300 }}
         >
           <Link
             to={action.to}
-            className="group flex flex-col items-center gap-2 rounded-2xl bg-card p-4 text-center shadow-sm transition-all hover:shadow-md hover:-translate-y-1"
+            className="group flex flex-col items-center gap-2.5 rounded-2xl bg-card p-3.5 text-center transition-all hover:shadow-lg hover:-translate-y-1.5"
           >
             <div className={cn(
               "flex size-12 items-center justify-center rounded-xl text-white shadow-lg transition-transform group-hover:scale-110",
-              action.color
+              action.gradient
             )}>
               <action.icon className="size-5" />
             </div>
             <span className="text-xs font-medium">{action.label}</span>
+          </Link>
+        </motion.div>
+      ))}
+    </motion.div>
+  );
+}
+
+function MoreActions() {
+  const actions = [
+    { to: "/library", icon: Library, label: "المكتبة", color: "bg-rose-500" },
+    { to: "/calendar", icon: Calendar, label: "التقويم", color: "bg-teal-500" },
+    { to: "/qibla", icon: Compass, label: "القبلة", color: "bg-indigo-500" },
+    { to: "/journal", icon: Star, label: "المفكرة", color: "bg-cyan-500" },
+  ];
+  
+  return (
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5, delay: 0.2 }}
+      className="grid grid-cols-2 gap-3"
+    >
+      {actions.map((action, index) => (
+        <motion.div
+          key={action.to}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 + index * 0.05 }}
+        >
+          <Link
+            to={action.to}
+            className="group flex items-center gap-3 rounded-2xl bg-card p-4 transition-all hover:shadow-md hover:-translate-y-0.5"
+          >
+            <div className={cn("flex size-10 items-center justify-center rounded-xl text-white", action.color)}>
+              <action.icon className="size-4.5" />
+            </div>
+            <span className="text-sm font-medium">{action.label}</span>
+            <ChevronLeft className="size-4 mr-auto text-muted-foreground" />
           </Link>
         </motion.div>
       ))}
@@ -139,11 +185,11 @@ function HadithCard() {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 0.2 }}
-      className="rounded-2xl border border-border/50 bg-gradient-to-br from-card to-secondary/20 p-5"
+      transition={{ duration: 0.5, delay: 0.3 }}
+      className="card-glass rounded-2xl p-5"
     >
       <div className="mb-3 flex items-center gap-2">
-        <div className="flex size-8 items-center justify-center rounded-lg bg-[var(--gold)]/10">
+        <div className="flex size-8 items-center justify-center rounded-lg bg-[var(--gold)]/15">
           <Sparkles className="size-4 text-[var(--gold)]" />
         </div>
         <span className="text-sm font-semibold">حديث اليوم</span>
@@ -152,6 +198,37 @@ function HadithCard() {
         {HADITH_OF_DAY.text}
       </p>
       <p className="mt-3 text-xs text-muted-foreground">{HADITH_OF_DAY.source}</p>
+    </motion.div>
+  );
+}
+
+function ContinueReading() {
+  const [progress] = useLocalStorage<{ surah: number; ayah: number } | null>("islamic:progress", null);
+  
+  if (!progress) return null;
+  
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 0.35 }}
+    >
+      <Link
+        to="/quran/$surahId"
+        params={{ surahId: String(progress.surah) }}
+        className="card-glass flex items-center justify-between rounded-2xl p-4 transition-all hover:shadow-lg"
+      >
+        <div className="flex items-center gap-3">
+          <div className="flex size-11 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white">
+            <Play className="size-5" />
+          </div>
+          <div>
+            <p className="text-sm font-bold">متابعة القراءة</p>
+            <p className="text-xs text-muted-foreground">سورة الفاتحة — الآية 1</p>
+          </div>
+        </div>
+        <span className="text-xs text-primary font-medium">استمرار</span>
+      </Link>
     </motion.div>
   );
 }
@@ -166,11 +243,11 @@ function EventsSection() {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 0.3 }}
+      transition={{ duration: 0.5, delay: 0.4 }}
       className="space-y-3"
     >
       <div className="flex items-center gap-2">
-        <Star className="size-4 text-[var(--gold)]" />
+        <Calendar className="size-4 text-[var(--gold)]" />
         <h3 className="text-sm font-bold">المناسبات القادمة</h3>
       </div>
       
@@ -184,10 +261,10 @@ function EventsSection() {
             <motion.div
               key={`${event.hm}-${event.hd}`}
               whileHover={{ scale: 1.01 }}
-              className="flex items-center justify-between rounded-xl border border-border/50 bg-card p-4 transition-shadow hover:shadow-sm"
+              className="card-glass flex items-center justify-between rounded-2xl p-4 transition-shadow"
             >
               <div className="flex items-center gap-3">
-                <div className="flex size-10 items-center justify-center rounded-xl bg-[var(--gold)]/10">
+                <div className="flex size-10 items-center justify-center rounded-xl bg-[var(--gold)]/15">
                   <Star className="size-5 text-[var(--gold)]" />
                 </div>
                 <div>
@@ -211,35 +288,39 @@ function EventsSection() {
   );
 }
 
+function InspirationalQuote() {
+  return (
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: 0.5 }}
+      className="card-glass rounded-2xl p-5 text-center"
+    >
+      <div className="mb-3 flex justify-center">
+        <div className="flex size-10 items-center justify-center rounded-full bg-[var(--gold)]/15">
+          <Moon className="size-5 text-[var(--gold)]" />
+        </div>
+      </div>
+      <p className="font-display text-lg leading-9 text-foreground/90">
+        «أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ»
+      </p>
+      <p className="mt-2 text-xs text-muted-foreground">سورة الرعد — الآية ٢٨</p>
+    </motion.div>
+  );
+}
+
 function Index() {
   return (
     <AppShell>
       <div className="space-y-5">
-        <HeroSection />
+        <GreetingSection />
         <NextPrayerCard />
         <QuickActions />
+        <ContinueReading />
         <HadithCard />
+        <MoreActions />
         <EventsSection />
-        <SpiritualStats />
-        
-        <div>
-          <h2 className="mb-3 px-1 text-sm font-bold text-muted-foreground">الأقسام</h2>
-          <FeatureGrid />
-        </div>
-        
-        <div className="divider-geo" aria-hidden />
-        
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="rounded-2xl border border-[var(--gold)]/20 bg-[var(--gold)]/5 p-5 text-center"
-        >
-          <p className="font-display text-lg leading-9 text-foreground/90">
-            «أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ»
-          </p>
-          <p className="mt-2 text-xs text-muted-foreground">سورة الرعد — الآية ٢٨</p>
-        </motion.div>
+        <InspirationalQuote />
       </div>
     </AppShell>
   );
