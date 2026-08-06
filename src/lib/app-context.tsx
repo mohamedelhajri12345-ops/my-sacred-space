@@ -205,12 +205,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
           };
           
           if (data.latitude && data.longitude) {
-            const info: PlaceInfo = {
-              city: data.city,
-              country: data.country_name,
-              countryCode: data.country_code?.toUpperCase(),
-              timezone: data.timezone,
-            };
+            const info: PlaceInfo = {};
+            if (data.city) info.city = data.city;
+            if (data.country_name) info.country = data.country_name;
+            if (data.country_code) info.countryCode = data.country_code.toUpperCase();
+            if (data.timezone) info.timezone = data.timezone;
             
             const label = data.city
               ? `${data.city}، ${data.country_name}`

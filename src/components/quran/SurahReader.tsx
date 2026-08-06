@@ -102,7 +102,7 @@ export function SurahReader({
     setBuffering(true);
     setPosition(0);
     setDuration(0);
-    audio.src = sources[sourceIndex];
+    audio.src = sources[sourceIndex] ?? "";
     audio.load();
     setCurrentSource(sourceIndex);
 

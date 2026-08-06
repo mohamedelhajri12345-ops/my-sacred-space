@@ -37,7 +37,7 @@ type ChatMessage = {
   role: "user" | "assistant";
   text: string;
   sources?: Source[];
-  relatedTopics?: string[];
+  relatedTopics?: string[] | undefined;
   isStreaming?: boolean;
   error?: boolean;
 };
@@ -114,7 +114,6 @@ function SourcesSection({ sources }: { sources: Source[] }) {
                 {source.type === "quran" && "قرآن"}
                 {source.type === "hadith" && "حديث"}
                 {source.type === "scholar" && "مصدر"}
-                {source.type === "general" && "معلومة"}
               </span>
               <p className="mt-1 leading-relaxed text-muted-foreground">{source.text}</p>
               <p className="mt-0.5 font-medium text-foreground/80">{source.reference}</p>

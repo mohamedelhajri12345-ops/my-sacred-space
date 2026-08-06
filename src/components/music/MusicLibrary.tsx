@@ -80,8 +80,9 @@ export function MusicLibrary() {
           void audio.play();
         } else {
           const currentIndex = songs.findIndex((s) => s.id === currentSong?.id);
-          if (currentIndex < songs.length - 1) {
-            playSong(songs[currentIndex + 1]);
+          const nextSong = songs[currentIndex + 1];
+          if (nextSong) {
+            playSong(nextSong);
           } else {
             setIsPlaying(false);
           }
@@ -98,7 +99,7 @@ export function MusicLibrary() {
     const audio = ensureAudio();
     if (isPlaying) { audio.pause(); return; }
     if (audio.src && audio.src !== "") { audio.play().catch(() => toast.error("تعذّر متابعة التشغيل")); return; }
-    if (songs.length > 0) playSong(songs[0]);
+    if (songs[0]) playSong(songs[0]);
   };
 
   const seek = (value: number) => {

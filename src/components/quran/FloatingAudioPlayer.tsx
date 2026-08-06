@@ -335,7 +335,7 @@ export function FloatingAudioPlayer({
 }
 
 // Context for managing audio player state globally
-import { createContext, useContext, useRef, type ReactNode } from "react";
+import { createContext, useContext, type ReactNode } from "react";
 
 interface AudioPlayerContextType {
   isVisible: boolean;

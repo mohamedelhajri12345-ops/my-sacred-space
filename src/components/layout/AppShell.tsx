@@ -73,7 +73,7 @@ export function AppShell({
                   transition={{ duration: 0.2 }}
                   onClick={() => {
                     haptic("soft");
-                    void navigate(-1);
+                    window.history.back();
                   }}
                   aria-label="الرجوع"
                   className="soothing-btn flex size-9 items-center justify-center rounded-xl bg-white/15 text-white backdrop-blur-sm hover:bg-white/25 transition-colors"
