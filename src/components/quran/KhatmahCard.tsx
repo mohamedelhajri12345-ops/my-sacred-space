@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { Download, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
@@ -6,6 +6,7 @@ import { loadQuran, toArabicNumber, TOTAL_AYAHS, type ReadingProgress } from "@/
 import { useLocalStorage } from "@/lib/use-local-storage";
 import { formatHijri } from "@/lib/hijri";
 import { haptic } from "@/lib/haptics";
+import { Stepper, StepContent, StepNavigation } from "@/components/ui/stepper";
 
 /** رسم بطاقة الختمة على canvas لتنزيلها كصورة PNG. */
 function drawCard(canvas: HTMLCanvasElement, opts: { percent: number; surahName: string; ayah: number; hijri: string }) {
@@ -74,11 +75,37 @@ export function KhatmahCard() {
   const { data } = useQuery({ queryKey: ["quran"], queryFn: loadQuran, staleTime: Infinity });
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [busy, setBusy] = useState(false);
+  const [currentStage, setCurrentStage] = useState(0);
 
   const read = progress?.readAyahs ?? 0;
   const percent = Math.min(100, (read / TOTAL_AYAHS) * 100);
   const surahName = data?.find((s) => s.i === progress?.surah)?.n ?? "الفاتحة";
   const ayah = progress?.ayah ?? 0;
+
+  // تحديد المرحلة الحالية بناءً على نسبة الإنجاز
+  const determineStage = (pct: number): number => {
+    if (pct === 0) return 0;
+    if (pct < 25) return 1;
+    if (pct < 50) return 2;
+    if (pct < 75) return 3;
+    if (pct < 100) return 4;
+    return 5;
+  };
+
+  // مزامنة المرحلة مع نسبة الإنجاز
+  React.useEffect(() => {
+    const stage = determineStage(percent);
+    setCurrentStage(stage);
+  }, [percent]);
+
+  const steps = [
+    { id: "start", label: "البداية", description: "ابدأ رحلتك" },
+    { id: "quarter", label: "الربع الأول", description: "25٪" },
+    { id: "half", label: "النصف", description: "50٪" },
+    { id: "three-quarter", label: "الثلاثة أرباع", description: "75٪" },
+    { id: "almost", label: "اقتربت", description: "90٪" },
+    { id: "complete", label: "الختمة", description: "100٪" },
+  ];
 
   const build = () => {
     const canvas = canvasRef.current ?? document.createElement("canvas");
@@ -128,6 +155,12 @@ export function KhatmahCard() {
 
   return (
     <div className="space-y-4 pb-24">
+      {/* شريط المراحل */}
+      <div className="surface-card glass-panel p-4">
+        <Stepper steps={steps} currentStep={currentStage} variant="default" />
+      </div>
+
+      {/* بطاقة التقدم */}
       <div className="surface-card glass-panel relative overflow-hidden p-6 text-center">
         <div className="mx-auto grid size-44 place-items-center rounded-full"
           style={{
