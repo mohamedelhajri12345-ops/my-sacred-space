@@ -1,27 +1,12 @@
 import { useCallback, useEffect, useState, useRef } from "react";
 
-// Map to cache initial values during SSR/hydration
-const initialCache = new Map<string, unknown>();
-
 export function useLocalStorage<T>(key: string, initial: T) {
   const [hydrated, setHydrated] = useState(false);
   const initialValueRef = useRef<T | null>(null);
-  
-  // Read initial value from localStorage or use the provided initial value
-  if (initialValueRef.current === null && typeof window !== "undefined") {
-    try {
-      const raw = window.localStorage.getItem(key);
-      if (raw !== null) {
-        initialValueRef.current = JSON.parse(raw) as T;
-      }
-    } catch {
-      initialValueRef.current = null;
-    }
-  }
-  
-  const [value, setValue] = useState<T>(() => {
-    return initialValueRef.current ?? initial;
-  });
+
+  // القيمة الأولى تطابق ما يُصيّره الخادم دائمًا (تفاديًا لاختلاف الترطيب)،
+  // ثم تُقرأ القيمة المحفوظة بعد التركيب.
+  const [value, setValue] = useState<T>(initial);
 
   // Sync with localStorage on mount (after hydration)
   useEffect(() => {
