@@ -90,7 +90,17 @@ function todayKey() {
 }
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [settings, setSettings] = useLocalStorage<Settings>("islamic:settings", DEFAULT_SETTINGS);
+  const [storedSettings, setSettings] = useLocalStorage<Settings>("islamic:settings", DEFAULT_SETTINGS);
+  // دمج الإعدادات المحفوظة القديمة مع الافتراضية لتفادي الحقول الناقصة
+  const settings = useMemo<Settings>(
+    () => ({
+      ...DEFAULT_SETTINGS,
+      ...storedSettings,
+      enabledPrayers: { ...DEFAULT_SETTINGS.enabledPrayers, ...(storedSettings?.enabledPrayers ?? {}) },
+      prayerAdjustments: { ...(storedSettings?.prayerAdjustments ?? {}) },
+    }),
+    [storedSettings],
+  );
   const [coords, setCoordsState] = useLocalStorage<Coords>("islamic:coords", DEFAULT_COORDS);
   const [place, setPlace] = useLocalStorage<PlaceInfo | null>("islamic:place", null);
   const [streak, setStreak] = useLocalStorage<Streak>("islamic:streak", {
