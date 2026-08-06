@@ -59,7 +59,7 @@ export function AnimatedBackground() {
       
       {/* الجزيئات المتحركة */}
       <div className="absolute inset-0">
-        {particles.map((particle) => (
+        {mounted && particles.map((particle) => (
           <div
             key={`particle-${particle.id}`}
             className="absolute rounded-full"
