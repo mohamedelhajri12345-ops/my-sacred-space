@@ -180,7 +180,7 @@ function MoreActions() {
               to={action.to}
               className="group flex items-center gap-3 rounded-2xl bg-card p-4 transition-all hover:shadow-md hover:-translate-y-0.5 border border-border/50"
             >
-              <div className={cn("flex size-11 items-center justify-center rounded-xl text-white shadow-md", action.gradient)}>
+              <div className={cn("flex size-11 items-center justify-center rounded-xl bg-gradient-to-br text-white shadow-md", action.gradient)}>
                 <action.icon className="size-5" />
               </div>
               <div className="flex-1 min-w-0">
