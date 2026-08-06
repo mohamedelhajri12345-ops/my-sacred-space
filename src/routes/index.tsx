@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/layout/AppShell";
 import { NextPrayerCard } from "@/components/prayer/NextPrayerCard";
 import { upcomingEvents, formatGregorianAr, formatHijri } from "@/lib/hijri";
-import { Star, Moon, BookOpen, Sparkles, Sun, Sunset, SunMoon, Compass, Calendar, Library, HandHeart, Play, Pause, ChevronLeft, Waves, Flame, Prayer, Mosque } from "lucide-react";
+import { Star, Moon, BookOpen, Sparkles, Sun, Sunset, SunMoon, Compass, Calendar, Library, HandHeart, Play, Pause, ChevronLeft, Waves, Flame } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useLocalStorage } from "@/lib/use-local-storage";
@@ -252,6 +252,8 @@ function ContinueReading() {
   );
 }
 
+const GREGORIAN_MONTHS_AR = ["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
+
 function EventsSection() {
   const events = upcomingEvents(new Date(), 3);
   const today = new Date();
@@ -296,7 +298,7 @@ function EventsSection() {
                   {isToday ? "اليوم" : isTomorrow ? "غداً" : `بعد ${daysUntil} يوم`}
                 </p>
                 <p className="text-[10px] text-muted-foreground">
-                  {date.toLocaleDateString("ar-SA", { month: "short", day: "numeric" })}
+                  {`${date.getDate()} ${GREGORIAN_MONTHS_AR[date.getMonth()] ?? ""}`}
                 </p>
               </div>
             </motion.div>
@@ -331,7 +333,7 @@ function InspirationalQuote() {
 // Stats Section
 function StatsSection() {
   const [progress] = useLocalStorage<{ readAyahs: number } | null>("islamic:progress", null);
-  const [streak] = useLocalStorage<{ count: number; totalSessions: number }>("islamic:streak", { count: 0, lastDay: "", totalSessions: 0 });
+  const [streak] = useLocalStorage<{ count: number; lastDay: string; totalSessions: number }>("islamic:streak", { count: 0, lastDay: "", totalSessions: 0 });
   
   const stats = useMemo(() => [
     { label: "آيات القرآن", value: progress?.readAyahs || 0, icon: BookOpen, color: "text-emerald-500" },

@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { toast } from "sonner";
 import { useLocalStorage } from "./use-local-storage";
 import { DEFAULT_COORDS, type Coords, type MethodKey, type PrayerKey } from "./prayer";
 import { methodForCountry, reverseGeocode, type PlaceInfo } from "./geo";
@@ -9,7 +10,7 @@ export type AlertKind = "silent" | "beep" | "adhan";
 export type PrayerAdjustments = Partial<Record<PrayerKey, number>>;
 
 export type Settings = {
-  theme: "light" | "dark";
+  theme: "light" | "dark" | "reading";
   method: MethodKey;
   autoMethod: boolean;
   notificationsEnabled: boolean;
@@ -90,7 +91,17 @@ function todayKey() {
 }
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [settings, setSettings] = useLocalStorage<Settings>("islamic:settings", DEFAULT_SETTINGS);
+  const [storedSettings, setSettings] = useLocalStorage<Settings>("islamic:settings", DEFAULT_SETTINGS);
+  // دمج الإعدادات المحفوظة القديمة مع الافتراضية لتفادي الحقول الناقصة
+  const settings = useMemo<Settings>(
+    () => ({
+      ...DEFAULT_SETTINGS,
+      ...storedSettings,
+      enabledPrayers: { ...DEFAULT_SETTINGS.enabledPrayers, ...(storedSettings?.enabledPrayers ?? {}) },
+      prayerAdjustments: { ...(storedSettings?.prayerAdjustments ?? {}) },
+    }),
+    [storedSettings],
+  );
   const [coords, setCoordsState] = useLocalStorage<Coords>("islamic:coords", DEFAULT_COORDS);
   const [place, setPlace] = useLocalStorage<PlaceInfo | null>("islamic:place", null);
   const [streak, setStreak] = useLocalStorage<Streak>("islamic:streak", {
@@ -115,7 +126,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const root = document.documentElement;
-    root.classList.toggle("dark", settings.theme === "dark");
+    root.classList.toggle("dark", settings.theme === "dark" || settings.theme === "reading");
+    root.classList.toggle("reading-mode", settings.theme === "reading");
     root.style.setProperty("--app-font-scale", String(settings.fontScale));
   }, [settings.theme, settings.fontScale]);
 
@@ -193,12 +205,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
           };
           
           if (data.latitude && data.longitude) {
-            const info = {
-              city: data.city,
-              country: data.country_name,
-              countryCode: data.country_code?.toUpperCase(),
-              timezone: data.timezone,
-            };
+            const info: PlaceInfo = {};
+            if (data.city) info.city = data.city;
+            if (data.country_name) info.country = data.country_name;
+            if (data.country_code) info.countryCode = data.country_code.toUpperCase();
+            if (data.timezone) info.timezone = data.timezone;
             
             const label = data.city
               ? `${data.city}، ${data.country_name}`

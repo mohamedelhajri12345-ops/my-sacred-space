@@ -202,9 +202,10 @@ export function AudioPlayer({
   const handlePrevious = useCallback(() => {
     if (!currentSource) return;
     const currentIndex = sources.findIndex(s => s.id === currentSource.id);
-    if (currentIndex > 0) {
-      setCurrentSource(sources[currentIndex - 1]);
-      onTrackChange?.(sources[currentIndex - 1]);
+    const prevSource = sources[currentIndex - 1];
+    if (currentIndex > 0 && prevSource) {
+      setCurrentSource(prevSource);
+      onTrackChange?.(prevSource);
       haptic("soft");
     }
   }, [currentSource, sources, onTrackChange]);
