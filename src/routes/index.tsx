@@ -252,6 +252,8 @@ function ContinueReading() {
   );
 }
 
+const GREGORIAN_MONTHS_AR = ["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
+
 function EventsSection() {
   const events = upcomingEvents(new Date(), 3);
   const today = new Date();
@@ -296,7 +298,7 @@ function EventsSection() {
                   {isToday ? "اليوم" : isTomorrow ? "غداً" : `بعد ${daysUntil} يوم`}
                 </p>
                 <p className="text-[10px] text-muted-foreground">
-                  {`${date.getDate()} ${GREGORIAN_MONTHS_AR[date.getMonth()]}`}
+                  {`${date.getDate()} ${GREGORIAN_MONTHS_AR[date.getMonth()] ?? ""}`}
                 </p>
               </div>
             </motion.div>
