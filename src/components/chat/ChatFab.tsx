@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useRouterState } from "@tanstack/react-router";
 import { Moon, Send, X, WifiOff, Info, BookOpen, Quote, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
 import { useApp } from "@/lib/app-context";
 import { haptic } from "@/lib/haptics";
@@ -218,7 +219,10 @@ export function ChatFab() {
           haptic("medium");
           setOpen(true);
         }}
-        className="press animate-soft-pulse fixed bottom-24 left-4 z-50 flex size-14 items-center justify-center rounded-full gradient-gold text-gold-foreground"
+        className={cn(
+          "press animate-soft-pulse fixed left-4 z-50 flex size-14 items-center justify-center rounded-full gradient-gold text-gold-foreground transition-all",
+          hasStickyPlayer ? "bottom-52" : "bottom-24",
+        )}
         style={{ boxShadow: '0 8px 32px -8px rgba(212, 175, 55, 0.6), 0 0 40px rgba(212, 175, 55, 0.3)' }}
       >
         <div className="relative">
