@@ -92,7 +92,7 @@ export function AppShell({
             </motion.div>
             
             <div className="min-w-0">
-              <h1 className="font-display truncate text-lg font-bold leading-tight">{title ?? "My Sacred Space"}</h1>
+              <h1 className="font-display truncate text-lg font-bold leading-tight">{title ?? "أحلام الروح"}</h1>
               <p className="truncate text-xs text-muted-foreground">{subtitle ?? formatHijri(new Date())}</p>
             </div>
           </div>

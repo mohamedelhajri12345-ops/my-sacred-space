@@ -11,12 +11,12 @@ import { useEffect, useState, useMemo } from "react";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "My Sacred Space — رفيقك اليومي في العبادة" },
+      { title: "أحلام الروح — رفيقك اليومي في العبادة" },
       {
         name: "description",
         content: "تطبيق إسلامي شامل: القرآن والتفسير، الأذكار والمسبحة، مواقيت الصلاة، القبلة والتقويم الهجري.",
       },
-      { property: "og:title", content: "My Sacred Space" },
+      { property: "og:title", content: "أحلام الروح" },
       { property: "og:description", content: "رفيقك اليومي في العبادة" },
     ],
   }),
@@ -39,14 +39,14 @@ function GreetingSection() {
   const today = new Date();
   
   const greeting = hour < 5 
-    ? { icon: Moon, text: "قيام مبارك", gradient: "from-indigo-600 via-purple-600 to-indigo-700", emoji: "🌙" }
+    ? { icon: Moon, text: "قيام مبارك", gradient: "from-[#12251d] via-[#16342a] to-[#12222c]", emoji: "🌙" }
     : hour < 12 
-    ? { icon: Sun, text: "صباح النور", gradient: "from-amber-400 via-orange-400 to-amber-500", emoji: "☀️" }
+    ? { icon: Sun, text: "صباح النور", gradient: "from-[#4c6b4f] via-[#6d8f66] to-[#c9a24a]", emoji: "☀️" }
     : hour < 17 
-    ? { icon: SunMoon, text: "طاب نهارك", gradient: "from-orange-400 via-amber-400 to-yellow-400", emoji: "🌤️" }
+    ? { icon: SunMoon, text: "طاب نهارك", gradient: "from-[#5b7d5c] via-[#8fb3c4] to-[#c9a24a]", emoji: "🌤️" }
     : hour < 20 
-    ? { icon: Sunset, text: "مساء الخير", gradient: "from-orange-500 via-amber-500 to-orange-600", emoji: "🌅" }
-    : { icon: Moon, text: "طابت ليلتك", gradient: "from-indigo-700 via-purple-700 to-indigo-800", emoji: "🌙" };
+    ? { icon: Sunset, text: "مساء الخير", gradient: "from-[#3d5c47] via-[#c9a24a] to-[#7c9a86]", emoji: "🌅" }
+    : { icon: Moon, text: "طابت ليلتك", gradient: "from-[#0c1a15] via-[#16281f] to-[#1d3140]", emoji: "🌙" };
   
   const GreetingIcon = greeting.icon;
   
@@ -136,7 +136,7 @@ function QuickActions() {
               className="group flex flex-col items-center gap-2.5 rounded-2xl bg-card p-3.5 text-center transition-all hover:shadow-lg hover:-translate-y-1.5 border border-border/50"
             >
               <div className={cn(
-                "flex size-12 items-center justify-center rounded-xl text-white shadow-lg transition-transform group-hover:scale-110",
+                "flex size-12 items-center justify-center rounded-xl bg-gradient-to-br text-white shadow-lg transition-transform group-hover:scale-110",
                 action.gradient
               )}>
                 <action.icon className="size-5" />
@@ -180,7 +180,7 @@ function MoreActions() {
               to={action.to}
               className="group flex items-center gap-3 rounded-2xl bg-card p-4 transition-all hover:shadow-md hover:-translate-y-0.5 border border-border/50"
             >
-              <div className={cn("flex size-11 items-center justify-center rounded-xl text-white shadow-md", action.gradient)}>
+              <div className={cn("flex size-11 items-center justify-center rounded-xl bg-gradient-to-br text-white shadow-md", action.gradient)}>
                 <action.icon className="size-5" />
               </div>
               <div className="flex-1 min-w-0">

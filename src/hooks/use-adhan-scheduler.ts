@@ -9,7 +9,7 @@ import {
   type PrayerEntry,
   OBLIGATORY_PRAYERS 
 } from "@/lib/prayer";
-import { playAlertSound, showLocalNotification } from "@/lib/notifications";
+import { playAlertSound, showLocalNotification, schedulePrayersInServiceWorker } from "@/lib/notifications";
 import { gregorianToHijri } from "@/lib/hijri";
 import { haptic } from "@/lib/haptics";
 
@@ -113,6 +113,18 @@ export function useAdhanScheduler(): AdhanSchedulerState {
     if (!next?.date) return 0;
     return Math.max(0, next.date.getTime() - now.getTime());
   }, [next, now]);
+
+  // جدولة الإشعارات في الـ Service Worker (تعمل والتطبيق مغلق)
+  const scheduleKey = timings.map((p) => p.date?.getTime() ?? 0).join(",");
+  useEffect(() => {
+    if (!settings.notificationsEnabled) return;
+    if (!timings || timings.length === 0) return;
+    const list = timings
+      .filter((p) => p.key !== "sunrise" && settings.enabledPrayers[p.key] !== false && p.date)
+      .map((p) => ({ label: p.label, date: p.date as Date }));
+    void schedulePrayersInServiceWorker(list, settings.reminderMinutes);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scheduleKey, settings.notificationsEnabled, settings.reminderMinutes]);
 
   // تأثير معالجة الإشعارات
   useEffect(() => {

@@ -25,6 +25,7 @@ export default defineConfig({
         manifest: false,
         workbox: {
           globDirectory: ".output/public",
+          importScripts: ["/notifications-sw.js"],
           globPatterns: ["**/*.{js,css,html,png,svg,ico,woff2,json}"],
           globIgnores: ["**/node_modules/**/*", "sw.js", "workbox-*.js"],
           maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
