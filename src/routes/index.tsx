@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/layout/AppShell";
 import { NextPrayerCard } from "@/components/prayer/NextPrayerCard";
 import { upcomingEvents, formatGregorianAr, formatHijri } from "@/lib/hijri";
-import { Star, Moon, BookOpen, Sparkles, Sun, Sunset, SunMoon, Compass, Calendar, Library, HandHeart, Play, Pause, ChevronLeft, Waves, Flame, Prayer, Mosque } from "lucide-react";
+import { Star, Moon, BookOpen, Sparkles, Sun, Sunset, SunMoon, Compass, Calendar, Library, HandHeart, Play, Pause, ChevronLeft, Waves, Flame } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useLocalStorage } from "@/lib/use-local-storage";
@@ -331,7 +331,7 @@ function InspirationalQuote() {
 // Stats Section
 function StatsSection() {
   const [progress] = useLocalStorage<{ readAyahs: number } | null>("islamic:progress", null);
-  const [streak] = useLocalStorage<{ count: number; totalSessions: number }>("islamic:streak", { count: 0, lastDay: "", totalSessions: 0 });
+  const [streak] = useLocalStorage<{ count: number; lastDay: string; totalSessions: number }>("islamic:streak", { count: 0, lastDay: "", totalSessions: 0 });
   
   const stats = useMemo(() => [
     { label: "آيات القرآن", value: progress?.readAyahs || 0, icon: BookOpen, color: "text-emerald-500" },

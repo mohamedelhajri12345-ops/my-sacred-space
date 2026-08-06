@@ -8,12 +8,12 @@
 // الحصول على مفتاح API من متغير البيئة أو استخدام قيمة فارغة كاحتياطي
 const getApiKey = (): string => {
   // في الخادم (Nitro/Cloudflare Workers)
-  if (typeof process !== 'undefined' && process.env?.OPENROUTER_API_KEY) {
-    return process.env.OPENROUTER_API_KEY;
+  if (typeof process !== 'undefined' && process.env?.['OPENROUTER_API_KEY']) {
+    return process.env['OPENROUTER_API_KEY'];
   }
   // في المتصفح - يتم توفيره من الخادم
   if (typeof window !== 'undefined') {
-    return (window as unknown as Record<string, string>).__OPENROUTER_API_KEY__ || '';
+    return (window as unknown as Record<string, string>)['__OPENROUTER_API_KEY__'] || '';
   }
   return '';
 };

@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { toast } from "sonner";
 import { useLocalStorage } from "./use-local-storage";
 import { DEFAULT_COORDS, type Coords, type MethodKey, type PrayerKey } from "./prayer";
 import { methodForCountry, reverseGeocode, type PlaceInfo } from "./geo";
@@ -9,7 +10,7 @@ export type AlertKind = "silent" | "beep" | "adhan";
 export type PrayerAdjustments = Partial<Record<PrayerKey, number>>;
 
 export type Settings = {
-  theme: "light" | "dark";
+  theme: "light" | "dark" | "reading";
   method: MethodKey;
   autoMethod: boolean;
   notificationsEnabled: boolean;
@@ -203,7 +204,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           };
           
           if (data.latitude && data.longitude) {
-            const info = {
+            const info: PlaceInfo = {
               city: data.city,
               country: data.country_name,
               countryCode: data.country_code?.toUpperCase(),
