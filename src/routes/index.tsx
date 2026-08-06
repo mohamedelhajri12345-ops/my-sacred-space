@@ -296,7 +296,7 @@ function EventsSection() {
                   {isToday ? "اليوم" : isTomorrow ? "غداً" : `بعد ${daysUntil} يوم`}
                 </p>
                 <p className="text-[10px] text-muted-foreground">
-                  {date.toLocaleDateString("ar-SA", { month: "short", day: "numeric" })}
+                  {`${date.getDate()} ${GREGORIAN_MONTHS_AR[date.getMonth()]}`}
                 </p>
               </div>
             </motion.div>
