@@ -101,6 +101,8 @@ function RelatedTopics({ topics }: { topics?: string[] }) {
 export function ChatFab() {
   const { online } = useApp();
   const [open, setOpen] = useState(false);
+  const pathname = useRouterState({ select: (st) => st.location.pathname });
+  const hasStickyPlayer = /^\/quran\/\d+/.test(pathname);
   const [input, setInput] = useState("");
   const [thinking, setThinking] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
