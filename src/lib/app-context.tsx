@@ -126,7 +126,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const root = document.documentElement;
-    root.classList.toggle("dark", settings.theme === "dark");
+    root.classList.toggle("dark", settings.theme === "dark" || settings.theme === "reading");
+    root.classList.toggle("reading-mode", settings.theme === "reading");
     root.style.setProperty("--app-font-scale", String(settings.fontScale));
   }, [settings.theme, settings.fontScale]);
 
