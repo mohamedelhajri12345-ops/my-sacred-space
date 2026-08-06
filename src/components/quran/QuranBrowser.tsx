@@ -340,5 +340,3 @@ export function QuranBrowser() {
   );
 }
 
-// Add Play icon import
-import { Play, X } from "lucide-react";
