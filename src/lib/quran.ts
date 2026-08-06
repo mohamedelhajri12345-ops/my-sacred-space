@@ -117,14 +117,17 @@ export function ayahAudioUrl(reciterId: string, surah: number, ayah: number) {
   const padded = pad3(surah);
   const ayahPadded = pad3(ayah);
   
-  // المحاولة الأولى: cdn.islamic.network
-  if (r.islamicNetworkId) {
-    return `https://cdn.islamic.network/quran/audio/128/${r.islamicNetworkId}/${ayah}.mp3`;
-  }
-  
-  // fallback: mp3quran.net
-  const server = r.server || "https://server8.mp3quran.net";
-  return `${server}/${r.mp3quranDir}/${padded}${ayahPadded}.mp3`;
+  // ترتيب المصادر: everyayah أولاً (الأكثر موثوقية)، ثم islamic.network، ثم mp3quran
+  const sources = [
+    // everyayah - المصدر الأكثر موثوقية
+    r.server3 ? `${r.server3}/${padded}${ayahPadded}.mp3` : null,
+    // cdn.islamic.network
+    r.islamicNetworkId ? `https://cdn.islamic.network/quran/audio/128/${r.islamicNetworkId}/${ayah}.mp3` : null,
+    // mp3quran.net
+    r.server ? `${r.server}/${r.mp3quranDir}/${padded}${ayahPadded}.mp3` : null,
+  ].filter(Boolean) as string[];
+
+  return sources[0] || "";
 }
 
 /** رابط تلاوة سورة كاملة - مع fallback متعدد المصادر */
@@ -132,14 +135,17 @@ export function surahAudioUrl(reciterId: string, surah: number) {
   const r = getReciter(reciterId);
   const padded = pad3(surah);
   
-  // المحاولة الأولى: cdn.islamic.network
-  if (r.islamicNetworkId) {
-    return `https://cdn.islamic.network/quran/audio-surah/128/${r.islamicNetworkId}/${surah}.mp3`;
-  }
-  
-  // fallback: mp3quran.net
-  const server = r.server || "https://server8.mp3quran.net";
-  return `${server}/${r.mp3quranDir}/${padded}.mp3`;
+  // ترتيب المصادر: everyayah أولاً (الأكثر موثوقية)، ثم islamic.network، ثم mp3quran
+  const sources = [
+    // everyayah - المصدر الأكثر موثوقية
+    r.server3 ? `${r.server3}/${padded}.mp3` : null,
+    // cdn.islamic.network
+    r.islamicNetworkId ? `https://cdn.islamic.network/quran/audio-surah/128/${r.islamicNetworkId}/${surah}.mp3` : null,
+    // mp3quran.net
+    r.server ? `${r.server}/${r.mp3quranDir}/${padded}.mp3` : null,
+  ].filter(Boolean) as string[];
+
+  return sources[0] || "";
 }
 
 /** التحقق من توفر مصدر الصوت (للاستخدام المستقبلي مع failover) */
