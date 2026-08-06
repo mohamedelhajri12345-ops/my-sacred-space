@@ -82,7 +82,7 @@ export function AnimatedBackground() {
       
       {/* جزيئات ضوئية صغيرة */}
       <div className="absolute inset-0">
-        {[...Array(15)].map((_, i) => (
+        {mounted && [...Array(15)].map((_, i) => (
           <div
             key={`sparkle-${i}`}
             className="absolute rounded-full bg-white"
