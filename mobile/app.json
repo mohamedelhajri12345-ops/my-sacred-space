@@ -11,15 +11,9 @@
       "expo-router",
       "expo-audio",
       ["expo-location", {"locationWhenInUsePermission":"يحتاج التطبيق إلى موقعك لحساب مواقيت الصلاة واتجاه القبلة."}],
-      ["expo-notifications", {"icon":"./assets/icon.png","color":"#0B5E75"}]
+      "expo-notifications"
     ],
-    "android": {
-      "package": "com.mohamedelhajri.mysacredspace",
-      "permissions": ["ACCESS_COARSE_LOCATION","ACCESS_FINE_LOCATION","VIBRATE","POST_NOTIFICATIONS"]
-    },
-    "ios": {
-      "bundleIdentifier": "com.mohamedelhajri.mysacredspace",
-      "supportsTablet": true
-    }
+    "android": {"package":"com.mohamedelhajri.mysacredspace","permissions":["ACCESS_COARSE_LOCATION","ACCESS_FINE_LOCATION","VIBRATE","POST_NOTIFICATIONS"]},
+    "ios": {"bundleIdentifier":"com.mohamedelhajri.mysacredspace","supportsTablet":true}
   }
 }
