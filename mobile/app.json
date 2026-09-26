@@ -1,0 +1,25 @@
+{
+  "expo": {
+    "name": "My Sacred Space",
+    "slug": "my-sacred-space",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "scheme": "mysacredspace",
+    "newArchEnabled": true,
+    "plugins": [
+      "expo-router",
+      "expo-audio",
+      ["expo-location", {"locationWhenInUsePermission":"يحتاج التطبيق إلى موقعك لحساب مواقيت الصلاة واتجاه القبلة."}],
+      ["expo-notifications", {"icon":"./assets/icon.png","color":"#0B5E75"}]
+    ],
+    "android": {
+      "package": "com.mohamedelhajri.mysacredspace",
+      "permissions": ["ACCESS_COARSE_LOCATION","ACCESS_FINE_LOCATION","VIBRATE","POST_NOTIFICATIONS"]
+    },
+    "ios": {
+      "bundleIdentifier": "com.mohamedelhajri.mysacredspace",
+      "supportsTablet": true
+    }
+  }
+}
