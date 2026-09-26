@@ -20,7 +20,19 @@ jobs:
         run: npm install --legacy-peer-deps
       - name: Generate native Android project
         run: npx expo prebuild --platform android --non-interactive
-      - name: Build debug APK
+      - name: Force JS bundle into standalone debug APK
+        working-directory: mobile/android
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("app/build.gradle")
+          s = p.read_text()
+          if "debuggableVariants = []" not in s:
+              s = s.replace("react {", "react {\n    // This APK must run without Metro on a physical device.\n    debuggableVariants = []", 1)
+              p.write_text(s)
+          PY
+          grep -n "debuggableVariants" app/build.gradle
+      - name: Build standalone debug APK
         working-directory: mobile/android
         run: ./gradlew assembleDebug --no-daemon
       - name: Upload APK
