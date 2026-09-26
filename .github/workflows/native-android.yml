@@ -17,9 +17,7 @@ jobs:
           cache: npm
           cache-dependency-path: mobile/package.json
       - name: Install dependencies
-        run: npm install
-      - name: Align Expo packages
-        run: npx expo install --fix
+        run: npm install --legacy-peer-deps
       - name: Generate native Android project
         run: npx expo prebuild --platform android --non-interactive
       - name: Build debug APK
