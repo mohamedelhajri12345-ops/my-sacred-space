@@ -1,0 +1,4 @@
+import { Tabs } from 'expo-router';
+import { Text } from 'react-native';
+import { colors } from '../../src/theme';
+export default function TabsLayout(){return <Tabs screenOptions={{headerShown:false,tabBarActiveTintColor:colors.teal,tabBarInactiveTintColor:colors.muted,tabBarStyle:{height:70,paddingBottom:10,paddingTop:8,backgroundColor:'#fff',borderTopColor:colors.border},tabBarLabelStyle:{fontSize:11,fontWeight:'700'}}}><Tabs.Screen name="index" options={{title:'الرئيسية',tabBarLabel:'الرئيسية',tabBarIcon:()=> <Text>⌂</Text>}}/><Tabs.Screen name="quran" options={{title:'القرآن',tabBarLabel:'القرآن',tabBarIcon:()=> <Text>۞</Text>}}/><Tabs.Screen name="athkar" options={{title:'الأذكار',tabBarLabel:'الأذكار',tabBarIcon:()=> <Text>ﷲ</Text>}}/><Tabs.Screen name="prayer" options={{title:'الصلاة',tabBarLabel:'الصلاة',tabBarIcon:()=> <Text>🕌</Text>}}/><Tabs.Screen name="tasbih" options={{title:'المسبحة',tabBarLabel:'المسبحة',tabBarIcon:()=> <Text>●</Text>}}/></Tabs>;}
